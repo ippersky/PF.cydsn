@@ -1,0 +1,4897 @@
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 1
+
+
+   1              		.syntax unified
+   2              		.cpu cortex-m4
+   3              		.eabi_attribute 27, 1
+   4              		.fpu fpv4-sp-d16
+   5              		.eabi_attribute 20, 1
+   6              		.eabi_attribute 21, 1
+   7              		.eabi_attribute 23, 3
+   8              		.eabi_attribute 24, 1
+   9              		.eabi_attribute 25, 1
+  10              		.eabi_attribute 26, 1
+  11              		.eabi_attribute 30, 1
+  12              		.eabi_attribute 34, 1
+  13              		.eabi_attribute 18, 4
+  14              		.thumb
+  15              		.syntax unified
+  16              		.file	"main_cm4.c"
+  17              		.text
+  18              	.Ltext0:
+  19              		.cfi_sections	.debug_frame
+  20              		.section	.text.UpdateDisplay,"ax",%progbits
+  21              		.align	2
+  22              		.global	UpdateDisplay
+  23              		.thumb
+  24              		.thumb_func
+  25              		.type	UpdateDisplay, %function
+  26              	UpdateDisplay:
+  27              	.LFB557:
+  28              		.file 1 "main_cm4.c"
+   1:main_cm4.c    **** /******************************************************************************
+   2:main_cm4.c    **** * File Name: main_cm4.c
+   3:main_cm4.c    **** *
+   4:main_cm4.c    **** * Version: 1.2
+   5:main_cm4.c    **** *
+   6:main_cm4.c    **** * Description: This file main application code for the CE223727 EmWin Graphics
+   7:main_cm4.c    **** *				library EInk Display 
+   8:main_cm4.c    **** 
+   9:main_cm4.c    **** ********************************************************************************
+  10:main_cm4.c    **** *************MODIFIED by Christophe Cloutier-Tremblay.**************************
+  11:main_cm4.c    **** ********************************************************************************
+  12:main_cm4.c    **** * 
+  13:main_cm4.c    **** *
+  14:main_cm4.c    **** * Hardware Dependency: CY8CKIT-028-EPD E-Ink Display Shield
+  15:main_cm4.c    **** *					   CY8CKIT-062-BLE PSoC6 BLE Pioneer Kit
+  16:main_cm4.c    **** *
+  17:main_cm4.c    **** ******************************************************************************* 
+  18:main_cm4.c    **** * Copyright (2019), Cypress Semiconductor Corporation. All rights reserved. 
+  19:main_cm4.c    **** ******************************************************************************* 
+  20:main_cm4.c    **** * This software, including source code, documentation and related materials 
+  21:main_cm4.c    **** * (“Software”), is owned by Cypress Semiconductor Corporation or one of its 
+  22:main_cm4.c    **** * subsidiaries (“Cypress”) and is protected by and subject to worldwide patent 
+  23:main_cm4.c    **** * protection (United States and foreign), United States copyright laws and 
+  24:main_cm4.c    **** * international treaty provisions. Therefore, you may use this Software only 
+  25:main_cm4.c    **** * as provided in the license agreement accompanying the software package from 
+  26:main_cm4.c    **** * which you obtained this Software (“EULA”). 
+  27:main_cm4.c    **** * 
+  28:main_cm4.c    **** * If no EULA applies, Cypress hereby grants you a personal, non-exclusive, 
+  29:main_cm4.c    **** * non-transferable license to copy, modify, and compile the Software source 
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 2
+
+
+  30:main_cm4.c    **** * code solely for use in connection with Cypress’s integrated circuit products. 
+  31:main_cm4.c    **** * Any reproduction, modification, translation, compilation, or representation 
+  32:main_cm4.c    **** * of this Software except as specified above is prohibited without the express 
+  33:main_cm4.c    **** * written permission of Cypress. 
+  34:main_cm4.c    **** * 
+  35:main_cm4.c    **** * Disclaimer: THIS SOFTWARE IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND, 
+  36:main_cm4.c    **** * EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, NONINFRINGEMENT, IMPLIED 
+  37:main_cm4.c    **** * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. Cypress 
+  38:main_cm4.c    **** * reserves the right to make changes to the Software without notice. Cypress 
+  39:main_cm4.c    **** * does not assume any liability arising out of the application or use of the 
+  40:main_cm4.c    **** * Software or any product or circuit described in the Software. Cypress does 
+  41:main_cm4.c    **** * not authorize its products for use in any products where a malfunction or 
+  42:main_cm4.c    **** * failure of the Cypress product may reasonably be expected to result in 
+  43:main_cm4.c    **** * significant property damage, injury or death (“High Risk Product”). By 
+  44:main_cm4.c    **** * including Cypress’s product in a High Risk Product, the manufacturer of such 
+  45:main_cm4.c    **** * system or application assumes all risk of such use and in doing so agrees to 
+  46:main_cm4.c    **** * indemnify Cypress against all liability.
+  47:main_cm4.c    **** ********************************************************************************/
+  48:main_cm4.c    **** 
+  49:main_cm4.c    **** #include "project.h"
+  50:main_cm4.c    **** #include "GUI.h"
+  51:main_cm4.c    **** #include "pervasive_eink_hardware_driver.h"
+  52:main_cm4.c    **** #include "cy_eink_library.h"
+  53:main_cm4.c    **** #include "LCDConf.h"
+  54:main_cm4.c    **** #include <stdlib.h>
+  55:main_cm4.c    **** 
+  56:main_cm4.c    **** //vecteur sinus de 150 élément entre -1 et 1
+  57:main_cm4.c    **** float vectorSinus[]={0.099833,0.29552,0.47943,0.64422,0.78333,0.89121,0.96356,0.99749,0.99166,0.946
+  58:main_cm4.c    **** 
+  59:main_cm4.c    **** /* Image buffer cache */
+  60:main_cm4.c    **** uint8 imageBufferCache[CY_EINK_FRAME_SIZE] = {0};
+  61:main_cm4.c    **** 
+  62:main_cm4.c    **** /*******************************************************************************
+  63:main_cm4.c    **** * Function Name: void UpdateDisplay(void)
+  64:main_cm4.c    **** ********************************************************************************
+  65:main_cm4.c    **** *
+  66:main_cm4.c    **** * Summary: This function updates the display with the data in the display 
+  67:main_cm4.c    **** *			buffer.  The function first transfers the content of the EmWin
+  68:main_cm4.c    **** *			display buffer to the primary EInk display buffer.  Then it calls
+  69:main_cm4.c    **** *			the Cy_EINK_ShowFrame function to update the display, and then
+  70:main_cm4.c    **** *			it copies the EmWin display buffer to the Eink display cache buffer
+  71:main_cm4.c    **** *
+  72:main_cm4.c    **** * Parameters:
+  73:main_cm4.c    **** *  None
+  74:main_cm4.c    **** *
+  75:main_cm4.c    **** * Return:
+  76:main_cm4.c    **** *  None
+  77:main_cm4.c    **** *
+  78:main_cm4.c    **** * Side Effects:
+  79:main_cm4.c    **** *  It takes about a second to refresh the display.  This is a blocking function
+  80:main_cm4.c    **** *  and only returns after the display refresh
+  81:main_cm4.c    **** *
+  82:main_cm4.c    **** *******************************************************************************/
+  83:main_cm4.c    **** void UpdateDisplay(cy_eink_update_t updateMethod, bool powerCycle)
+  84:main_cm4.c    **** {
+  29              		.loc 1 84 0
+  30              		.cfi_startproc
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 3
+
+
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              	.LVL0:
+  34 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+  35              		.cfi_def_cfa_offset 24
+  36              		.cfi_offset 3, -24
+  37              		.cfi_offset 4, -20
+  38              		.cfi_offset 5, -16
+  39              		.cfi_offset 6, -12
+  40              		.cfi_offset 7, -8
+  41              		.cfi_offset 14, -4
+  42 0002 0646     		mov	r6, r0
+  43 0004 0F46     		mov	r7, r1
+  85:main_cm4.c    ****     cy_eink_frame_t* pEmwinBuffer;
+  86:main_cm4.c    **** 
+  87:main_cm4.c    ****     /* Get the pointer to Emwin's display buffer */
+  88:main_cm4.c    ****     pEmwinBuffer = (cy_eink_frame_t*)LCD_GetDisplayBuffer();
+  44              		.loc 1 88 0
+  45 0006 FFF7FEFF 		bl	LCD_GetDisplayBuffer
+  46              	.LVL1:
+  47 000a 0546     		mov	r5, r0
+  48              	.LVL2:
+  89:main_cm4.c    **** 
+  90:main_cm4.c    ****     /* Update the EInk display */
+  91:main_cm4.c    ****     Cy_EINK_ShowFrame(imageBufferCache, pEmwinBuffer, updateMethod, powerCycle);
+  49              		.loc 1 91 0
+  50 000c 064C     		ldr	r4, .L3
+  51 000e 3B46     		mov	r3, r7
+  52 0010 3246     		mov	r2, r6
+  53 0012 0146     		mov	r1, r0
+  54 0014 2046     		mov	r0, r4
+  55              	.LVL3:
+  56 0016 FFF7FEFF 		bl	Cy_EINK_ShowFrame
+  57              	.LVL4:
+  92:main_cm4.c    **** 
+  93:main_cm4.c    ****     /* Copy the EmWin display buffer to the imageBuffer cache*/
+  94:main_cm4.c    ****     memcpy(imageBufferCache, pEmwinBuffer, CY_EINK_FRAME_SIZE);
+  58              		.loc 1 94 0
+  59 001a 41F2B062 		movw	r2, #5808
+  60 001e 2946     		mov	r1, r5
+  61 0020 2046     		mov	r0, r4
+  62 0022 FFF7FEFF 		bl	memcpy
+  63              	.LVL5:
+  64 0026 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+  65              	.LVL6:
+  66              	.L4:
+  67              		.align	2
+  68              	.L3:
+  69 0028 00000000 		.word	.LANCHOR0
+  70              		.cfi_endproc
+  71              	.LFE557:
+  72              		.size	UpdateDisplay, .-UpdateDisplay
+  73              		.section	.text.ClearScreen,"ax",%progbits
+  74              		.align	2
+  75              		.global	ClearScreen
+  76              		.thumb
+  77              		.thumb_func
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 4
+
+
+  78              		.type	ClearScreen, %function
+  79              	ClearScreen:
+  80              	.LFB558:
+  95:main_cm4.c    **** }
+  96:main_cm4.c    **** 
+  97:main_cm4.c    **** 
+  98:main_cm4.c    **** /*******************************************************************************
+  99:main_cm4.c    **** * Function Name: void ClearScreen(void)
+ 100:main_cm4.c    **** ********************************************************************************
+ 101:main_cm4.c    **** *
+ 102:main_cm4.c    **** * Summary: This function clears the screen
+ 103:main_cm4.c    **** *
+ 104:main_cm4.c    **** * Parameters:
+ 105:main_cm4.c    **** *  None
+ 106:main_cm4.c    **** *
+ 107:main_cm4.c    **** * Return:
+ 108:main_cm4.c    **** *  None
+ 109:main_cm4.c    **** *
+ 110:main_cm4.c    **** *******************************************************************************/
+ 111:main_cm4.c    **** void ClearScreen(void)
+ 112:main_cm4.c    **** {
+  81              		.loc 1 112 0
+  82              		.cfi_startproc
+  83              		@ args = 0, pretend = 0, frame = 0
+  84              		@ frame_needed = 0, uses_anonymous_args = 0
+  85 0000 08B5     		push	{r3, lr}
+  86              		.cfi_def_cfa_offset 8
+  87              		.cfi_offset 3, -8
+  88              		.cfi_offset 14, -4
+ 113:main_cm4.c    ****     GUI_SetColor(GUI_BLACK);
+  89              		.loc 1 113 0
+  90 0002 0020     		movs	r0, #0
+  91 0004 FFF7FEFF 		bl	GUI_SetColor
+  92              	.LVL7:
+ 114:main_cm4.c    ****     GUI_SetBkColor(GUI_WHITE);
+  93              		.loc 1 114 0
+  94 0008 6FF07F40 		mvn	r0, #-16777216
+  95 000c FFF7FEFF 		bl	GUI_SetBkColor
+  96              	.LVL8:
+ 115:main_cm4.c    ****     GUI_Clear();
+  97              		.loc 1 115 0
+  98 0010 FFF7FEFF 		bl	GUI_Clear
+  99              	.LVL9:
+ 116:main_cm4.c    ****     UpdateDisplay(CY_EINK_FULL_4STAGE, true);
+ 100              		.loc 1 116 0
+ 101 0014 0121     		movs	r1, #1
+ 102 0016 0846     		mov	r0, r1
+ 103 0018 FFF7FEFF 		bl	UpdateDisplay
+ 104              	.LVL10:
+ 105 001c 08BD     		pop	{r3, pc}
+ 106              		.cfi_endproc
+ 107              	.LFE558:
+ 108              		.size	ClearScreen, .-ClearScreen
+ 109 001e 00BF     		.section	.text.WaitforSwitchPressAndRelease,"ax",%progbits
+ 110              		.align	2
+ 111              		.global	WaitforSwitchPressAndRelease
+ 112              		.thumb
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 5
+
+
+ 113              		.thumb_func
+ 114              		.type	WaitforSwitchPressAndRelease, %function
+ 115              	WaitforSwitchPressAndRelease:
+ 116              	.LFB559:
+ 117:main_cm4.c    **** }
+ 118:main_cm4.c    **** /*******************************************************************************
+ 119:main_cm4.c    **** * Function Name: void WaitforSwitchPressAndRelease(void)
+ 120:main_cm4.c    **** ********************************************************************************
+ 121:main_cm4.c    **** *
+ 122:main_cm4.c    **** * Summary: This implements a simple "Wait for button press and release"
+ 123:main_cm4.c    **** *			function.  It first waits for the button to be pressed and then
+ 124:main_cm4.c    **** *			waits for the button to be released.
+ 125:main_cm4.c    **** *
+ 126:main_cm4.c    **** * Parameters:
+ 127:main_cm4.c    **** *  None
+ 128:main_cm4.c    **** *
+ 129:main_cm4.c    **** * Return:
+ 130:main_cm4.c    **** *  None
+ 131:main_cm4.c    **** *
+ 132:main_cm4.c    **** * Side Effects:
+ 133:main_cm4.c    **** *  This is a blocking function and exits only on a button press and release
+ 134:main_cm4.c    **** *
+ 135:main_cm4.c    **** *******************************************************************************/
+ 136:main_cm4.c    **** void WaitforSwitchPressAndRelease(void)
+ 137:main_cm4.c    **** {
+ 117              		.loc 1 137 0
+ 118              		.cfi_startproc
+ 119              		@ args = 0, pretend = 0, frame = 0
+ 120              		@ frame_needed = 0, uses_anonymous_args = 0
+ 121 0000 08B5     		push	{r3, lr}
+ 122              		.cfi_def_cfa_offset 8
+ 123              		.cfi_offset 3, -8
+ 124              		.cfi_offset 14, -4
+ 125              	.L8:
+ 138:main_cm4.c    ****     /* Wait for SW2 to be pressed */
+ 139:main_cm4.c    ****     while(Status_SW2_Read() != 0);
+ 126              		.loc 1 139 0 discriminator 1
+ 127 0002 FFF7FEFF 		bl	Status_SW2_Read
+ 128              	.LVL11:
+ 129 0006 0028     		cmp	r0, #0
+ 130 0008 FBD1     		bne	.L8
+ 131              	.L9:
+ 140:main_cm4.c    ****     
+ 141:main_cm4.c    ****     /* Wait for SW2 to be released */
+ 142:main_cm4.c    ****     while(Status_SW2_Read() == 0);
+ 132              		.loc 1 142 0 discriminator 1
+ 133 000a FFF7FEFF 		bl	Status_SW2_Read
+ 134              	.LVL12:
+ 135 000e 0028     		cmp	r0, #0
+ 136 0010 FBD0     		beq	.L9
+ 143:main_cm4.c    **** }
+ 137              		.loc 1 143 0
+ 138 0012 08BD     		pop	{r3, pc}
+ 139              		.cfi_endproc
+ 140              	.LFE559:
+ 141              		.size	WaitforSwitchPressAndRelease, .-WaitforSwitchPressAndRelease
+ 142              		.section	.text.main,"ax",%progbits
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 6
+
+
+ 143              		.align	2
+ 144              		.global	main
+ 145              		.thumb
+ 146              		.thumb_func
+ 147              		.type	main, %function
+ 148              	main:
+ 149              	.LFB560:
+ 144:main_cm4.c    **** 
+ 145:main_cm4.c    **** /*******************************************************************************
+ 146:main_cm4.c    **** * Function Name: int main(void)
+ 147:main_cm4.c    **** ********************************************************************************
+ 148:main_cm4.c    **** *
+ 149:main_cm4.c    **** * Summary: À Remplir
+ 150:main_cm4.c    **** *
+ 151:main_cm4.c    **** * Parameters:
+ 152:main_cm4.c    **** *  None
+ 153:main_cm4.c    **** *
+ 154:main_cm4.c    **** * Return:
+ 155:main_cm4.c    **** *  None
+ 156:main_cm4.c    **** *
+ 157:main_cm4.c    **** *******************************************************************************/
+ 158:main_cm4.c    **** int main(void)
+ 159:main_cm4.c    **** {
+ 150              		.loc 1 159 0
+ 151              		.cfi_startproc
+ 152              		@ Volatile: function does not return.
+ 153              		@ args = 0, pretend = 0, frame = 0
+ 154              		@ frame_needed = 0, uses_anonymous_args = 0
+ 155 0000 08B5     		push	{r3, lr}
+ 156              		.cfi_def_cfa_offset 8
+ 157              		.cfi_offset 3, -8
+ 158              		.cfi_offset 14, -4
+ 159              	.LBB4:
+ 160              	.LBB5:
+ 161              		.file 2 "Generated_Source\\PSoC6\\pdl\\cmsis/include/cmsis_gcc.h"
+   1:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** /**************************************************************************//**
+   2:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****  * @file     cmsis_gcc.h
+   3:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****  * @brief    CMSIS compiler GCC header file
+   4:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****  * @version  V5.0.3
+   5:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****  * @date     16. January 2018
+   6:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****  ******************************************************************************/
+   7:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** /*
+   8:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****  * Copyright (c) 2009-2017 ARM Limited. All rights reserved.
+   9:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****  *
+  10:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****  * SPDX-License-Identifier: Apache-2.0
+  11:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****  *
+  12:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  13:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****  * not use this file except in compliance with the License.
+  14:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****  * You may obtain a copy of the License at
+  15:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****  *
+  16:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****  * www.apache.org/licenses/LICENSE-2.0
+  17:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****  *
+  18:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****  * Unless required by applicable law or agreed to in writing, software
+  19:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  20:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  21:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****  * See the License for the specific language governing permissions and
+  22:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****  * limitations under the License.
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 7
+
+
+  23:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****  */
+  24:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** 
+  25:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #ifndef __CMSIS_GCC_H
+  26:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #define __CMSIS_GCC_H
+  27:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** 
+  28:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** /* ignore some GCC warnings */
+  29:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #pragma GCC diagnostic push
+  30:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wsign-conversion"
+  31:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wconversion"
+  32:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wunused-parameter"
+  33:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** 
+  34:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** /* Fallback for __has_builtin */
+  35:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #ifndef __has_builtin
+  36:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #define __has_builtin(x) (0)
+  37:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #endif
+  38:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** 
+  39:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** /* CMSIS compiler specific defines */
+  40:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #ifndef   __ASM
+  41:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #define __ASM                                  __asm
+  42:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #endif
+  43:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #ifndef   __INLINE
+  44:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #define __INLINE                               inline
+  45:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #endif
+  46:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #ifndef   __STATIC_INLINE
+  47:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #define __STATIC_INLINE                        static inline
+  48:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #endif
+  49:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #ifndef   __STATIC_FORCEINLINE                 
+  50:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #define __STATIC_FORCEINLINE                   __attribute__((always_inline)) static inline
+  51:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #endif                                           
+  52:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #ifndef   __NO_RETURN
+  53:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #define __NO_RETURN                            __attribute__((__noreturn__))
+  54:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #endif
+  55:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #ifndef   __USED
+  56:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #define __USED                                 __attribute__((used))
+  57:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #endif
+  58:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #ifndef   __WEAK
+  59:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #define __WEAK                                 __attribute__((weak))
+  60:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #endif
+  61:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #ifndef   __PACKED
+  62:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #define __PACKED                               __attribute__((packed, aligned(1)))
+  63:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #endif
+  64:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #ifndef   __PACKED_STRUCT
+  65:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #define __PACKED_STRUCT                        struct __attribute__((packed, aligned(1)))
+  66:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #endif
+  67:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #ifndef   __PACKED_UNION
+  68:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #define __PACKED_UNION                         union __attribute__((packed, aligned(1)))
+  69:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #endif
+  70:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32        /* deprecated */
+  71:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  72:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  73:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  74:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   struct __attribute__((packed)) T_UINT32 { uint32_t v; };
+  75:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  76:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32(x)                  (((struct T_UINT32 *)(x))->v)
+  77:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #endif
+  78:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_WRITE
+  79:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 8
+
+
+  80:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  81:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  82:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT16_WRITE { uint16_t v; };
+  83:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  84:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_WRITE(addr, val)    (void)((((struct T_UINT16_WRITE *)(void *)(addr))-
+  85:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #endif
+  86:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_READ
+  87:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  88:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  89:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  90:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT16_READ { uint16_t v; };
+  91:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  92:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_READ(addr)          (((const struct T_UINT16_READ *)(const void *)(add
+  93:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #endif
+  94:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32_WRITE
+  95:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  96:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  97:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  98:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_WRITE { uint32_t v; };
+  99:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+ 100:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_WRITE(addr, val)    (void)((((struct T_UINT32_WRITE *)(void *)(addr))-
+ 101:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #endif
+ 102:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32_READ
+ 103:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+ 104:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+ 105:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+ 106:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_READ { uint32_t v; };
+ 107:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+ 108:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_READ(addr)          (((const struct T_UINT32_READ *)(const void *)(add
+ 109:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #endif
+ 110:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #ifndef   __ALIGNED
+ 111:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #define __ALIGNED(x)                           __attribute__((aligned(x)))
+ 112:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #endif
+ 113:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #ifndef   __RESTRICT
+ 114:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   #define __RESTRICT                             __restrict
+ 115:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** #endif
+ 116:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** 
+ 117:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** 
+ 118:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** /* ###########################  Core Function Access  ########################### */
+ 119:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** /** \ingroup  CMSIS_Core_FunctionInterface
+ 120:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****     \defgroup CMSIS_Core_RegAccFunctions CMSIS Core Register Access Functions
+ 121:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   @{
+ 122:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****  */
+ 123:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** 
+ 124:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** /**
+ 125:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   \brief   Enable IRQ Interrupts
+ 126:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   \details Enables IRQ interrupts by clearing the I-bit in the CPSR.
+ 127:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****            Can only be executed in Privileged modes.
+ 128:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****  */
+ 129:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __enable_irq(void)
+ 130:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h **** {
+ 131:Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h ****   __ASM volatile ("cpsie i" : : : "memory");
+ 162              		.loc 2 131 0
+ 163              		.syntax unified
+ 164              	@ 131 "Generated_Source\PSoC6\pdl\cmsis/include/cmsis_gcc.h" 1
+ 165 0002 62B6     		cpsie i
+ 166              	@ 0 "" 2
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 9
+
+
+ 167              		.thumb
+ 168              		.syntax unified
+ 169              	.LBE5:
+ 170              	.LBE4:
+ 160:main_cm4.c    ****     
+ 161:main_cm4.c    ****     __enable_irq(); /* Enable global interrupts. */
+ 162:main_cm4.c    ****     
+ 163:main_cm4.c    ****     /* Initialize emWin Graphics */
+ 164:main_cm4.c    ****     GUI_Init();
+ 171              		.loc 1 164 0
+ 172 0004 FFF7FEFF 		bl	GUI_Init
+ 173              	.LVL13:
+ 165:main_cm4.c    **** 
+ 166:main_cm4.c    ****     /* Start the eInk display interface and turn on the display power */
+ 167:main_cm4.c    ****     Cy_EINK_Start(20);
+ 174              		.loc 1 167 0
+ 175 0008 1420     		movs	r0, #20
+ 176 000a FFF7FEFF 		bl	Cy_EINK_Start
+ 177              	.LVL14:
+ 168:main_cm4.c    ****     Cy_EINK_Power(1);
+ 178              		.loc 1 168 0
+ 179 000e 0120     		movs	r0, #1
+ 180 0010 FFF7FEFF 		bl	Cy_EINK_Power
+ 181              	.LVL15:
+ 169:main_cm4.c    ****     
+ 170:main_cm4.c    ****     GUI_SetPenSize(1);
+ 182              		.loc 1 170 0
+ 183 0014 0120     		movs	r0, #1
+ 184 0016 FFF7FEFF 		bl	GUI_SetPenSize
+ 185              	.LVL16:
+ 171:main_cm4.c    ****     GUI_SetColor(GUI_BLACK);
+ 186              		.loc 1 171 0
+ 187 001a 0020     		movs	r0, #0
+ 188 001c FFF7FEFF 		bl	GUI_SetColor
+ 189              	.LVL17:
+ 172:main_cm4.c    ****     GUI_SetBkColor(GUI_WHITE);
+ 190              		.loc 1 172 0
+ 191 0020 6FF07F40 		mvn	r0, #-16777216
+ 192 0024 FFF7FEFF 		bl	GUI_SetBkColor
+ 193              	.LVL18:
+ 173:main_cm4.c    ****     GUI_Clear();
+ 194              		.loc 1 173 0
+ 195 0028 FFF7FEFF 		bl	GUI_Clear
+ 196              	.LVL19:
+ 174:main_cm4.c    ****     
+ 175:main_cm4.c    ****     //Draw a rectangle
+ 176:main_cm4.c    ****     GUI_DrawRect(1,1,263,175);
+ 197              		.loc 1 176 0
+ 198 002c AF23     		movs	r3, #175
+ 199 002e 40F20712 		movw	r2, #263
+ 200 0032 0121     		movs	r1, #1
+ 201 0034 0846     		mov	r0, r1
+ 202 0036 FFF7FEFF 		bl	GUI_DrawRect
+ 203              	.LVL20:
+ 177:main_cm4.c    ****     
+ 178:main_cm4.c    ****     //Draw a line
+ 179:main_cm4.c    ****     GUI_SetPenSize(4);
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 10
+
+
+ 204              		.loc 1 179 0
+ 205 003a 0420     		movs	r0, #4
+ 206 003c FFF7FEFF 		bl	GUI_SetPenSize
+ 207              	.LVL21:
+ 180:main_cm4.c    ****     GUI_DrawLine(20,65,243,65);
+ 208              		.loc 1 180 0
+ 209 0040 4123     		movs	r3, #65
+ 210 0042 F322     		movs	r2, #243
+ 211 0044 1946     		mov	r1, r3
+ 212 0046 1420     		movs	r0, #20
+ 213 0048 FFF7FEFF 		bl	GUI_DrawLine
+ 214              	.LVL22:
+ 181:main_cm4.c    ****     
+ 182:main_cm4.c    ****     GUI_SetColor(GUI_BLACK);
+ 215              		.loc 1 182 0
+ 216 004c 0020     		movs	r0, #0
+ 217 004e FFF7FEFF 		bl	GUI_SetColor
+ 218              	.LVL23:
+ 183:main_cm4.c    ****     GUI_SetBkColor(GUI_WHITE);
+ 219              		.loc 1 183 0
+ 220 0052 6FF07F40 		mvn	r0, #-16777216
+ 221 0056 FFF7FEFF 		bl	GUI_SetBkColor
+ 222              	.LVL24:
+ 184:main_cm4.c    ****     
+ 185:main_cm4.c    ****    //Write a title and subtile	
+ 186:main_cm4.c    ****     GUI_SetFont(GUI_FONT_32B_1);
+ 223              		.loc 1 186 0
+ 224 005a 0C48     		ldr	r0, .L14
+ 225 005c FFF7FEFF 		bl	GUI_SetFont
+ 226              	.LVL25:
+ 187:main_cm4.c    ****     GUI_SetTextAlign(GUI_TA_CENTER);
+ 227              		.loc 1 187 0
+ 228 0060 0220     		movs	r0, #2
+ 229 0062 FFF7FEFF 		bl	GUI_SetTextAlign
+ 230              	.LVL26:
+ 188:main_cm4.c    ****     GUI_DispStringAt("GBM2100", 132, 30);
+ 231              		.loc 1 188 0
+ 232 0066 1E22     		movs	r2, #30
+ 233 0068 8421     		movs	r1, #132
+ 234 006a 0948     		ldr	r0, .L14+4
+ 235 006c FFF7FEFF 		bl	GUI_DispStringAt
+ 236              	.LVL27:
+ 189:main_cm4.c    ****     GUI_SetFont(GUI_FONT_16_1);
+ 237              		.loc 1 189 0
+ 238 0070 0848     		ldr	r0, .L14+8
+ 239 0072 FFF7FEFF 		bl	GUI_SetFont
+ 240              	.LVL28:
+ 190:main_cm4.c    ****     GUI_DispStringAt("Laboratoire 3", 132, 70);
+ 241              		.loc 1 190 0
+ 242 0076 4622     		movs	r2, #70
+ 243 0078 8421     		movs	r1, #132
+ 244 007a 0748     		ldr	r0, .L14+12
+ 245 007c FFF7FEFF 		bl	GUI_DispStringAt
+ 246              	.LVL29:
+ 191:main_cm4.c    ****     
+ 192:main_cm4.c    ****     UpdateDisplay(CY_EINK_FULL_4STAGE, true);
+ 247              		.loc 1 192 0
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 11
+
+
+ 248 0080 0121     		movs	r1, #1
+ 249 0082 0846     		mov	r0, r1
+ 250 0084 FFF7FEFF 		bl	UpdateDisplay
+ 251              	.LVL30:
+ 252              	.L12:
+ 253 0088 FEE7     		b	.L12
+ 254              	.L15:
+ 255 008a 00BF     		.align	2
+ 256              	.L14:
+ 257 008c 00000000 		.word	GUI_Font32B_1
+ 258 0090 00000000 		.word	.LC0
+ 259 0094 00000000 		.word	GUI_Font16_1
+ 260 0098 08000000 		.word	.LC1
+ 261              		.cfi_endproc
+ 262              	.LFE560:
+ 263              		.size	main, .-main
+ 264              		.global	imageBufferCache
+ 265              		.global	vectorSinus
+ 266              		.data
+ 267              		.align	2
+ 268              		.type	vectorSinus, %object
+ 269              		.size	vectorSinus, 500
+ 270              	vectorSinus:
+ 271 0000 3E75CC3D 		.word	1036809534
+ 272 0004 664E973E 		.word	1050103398
+ 273 0008 D977F53E 		.word	1056274393
+ 274 000c 9AEB243F 		.word	1059384218
+ 275 0010 5188483F 		.word	1061718097
+ 276 0014 5726643F 		.word	1063528023
+ 277 0018 DEAB763F 		.word	1064741854
+ 278 001c 815B7F3F 		.word	1065311105
+ 279 0020 6EDD7D3F 		.word	1065213294
+ 280 0024 B840723F 		.word	1064452280
+ 281 0028 55FB5C3F 		.word	1063058261
+ 282 002c DAE63E3F 		.word	1061086938
+ 283 0030 5435193F 		.word	1058616660
+ 284 0034 8DD1DA3E 		.word	1054527885
+ 285 0038 F4FD743E 		.word	1047854580
+ 286 003c D7502A3D 		.word	1026183383
+ 287 0040 378921BE 		.word	-1105098441
+ 288 0044 7099B3BE 		.word	-1095526032
+ 289 0048 98A307BF 		.word	-1090018408
+ 290 004c B21130BF 		.word	-1087368782
+ 291 0050 CC7A51BF 		.word	-1085179188
+ 292 0054 1E8A6ABF 		.word	-1083536866
+ 293 0058 683F7ABF 		.word	-1082507416
+ 294 005c C2FA7FBF 		.word	-1082131774
+ 295 0060 D8817BBF 		.word	-1082424872
+ 296 0064 E2016DBF 		.word	-1083375134
+ 297 0068 A60F55BF 		.word	-1084944474
+ 298 006c 459E34BF 		.word	-1087070651
+ 299 0070 05FA0CBF 		.word	-1089668603
+ 300 0074 336DBFBE 		.word	-1094750925
+ 301 0078 27883ABE 		.word	-1103460313
+ 302 007c 84BD893C 		.word	1015659908
+ 303 0080 6B485C3E 		.word	1046235243
+ 304 0084 8048CF3E 		.word	1053771904
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 12
+
+
+ 305 0088 A514143F 		.word	1058280613
+ 306 008c C79D3A3F 		.word	1060806087
+ 307 0090 70B6593F 		.word	1062844016
+ 308 0094 C520703F 		.word	1064313029
+ 309 0098 B6F87C3F 		.word	1065154742
+ 310 009c 88BA7F3F 		.word	1065335432
+ 311 00a0 B64A783F 		.word	1064848054
+ 312 00a4 9DF4663F 		.word	1063711901
+ 313 00a8 D7694C3F 		.word	1061972439
+ 314 00ac 67B8293F 		.word	1059698791
+ 315 00b0 D942003F 		.word	1056981721
+ 316 00b4 1361A33E 		.word	1050894611
+ 317 00b8 A4DFFE3D 		.word	1040113572
+ 318 00bc C4E899BD 		.word	-1113986876
+ 319 00c0 20248BBE 		.word	-1098177504
+ 320 00c4 AF42EABE 		.word	-1091943761
+ 321 00c8 960420BF 		.word	-1088420714
+ 322 00cc 558744BF 		.word	-1086027947
+ 323 00d0 053461BF 		.word	-1084148731
+ 324 00d4 5CE674BF 		.word	-1082857892
+ 325 00d8 28D57EBF 		.word	-1082206936
+ 326 00dc D49A7EBF 		.word	-1082221868
+ 327 00e0 A83A74BF 		.word	-1082901848
+ 328 00e4 7E1D60BF 		.word	-1084220034
+ 329 00e8 1F1143BF 		.word	-1086123745
+ 330 00ec 6C3E1EBF 		.word	-1088536980
+ 331 00f0 8638E6BE 		.word	-1092208506
+ 332 00f4 15C686BE 		.word	-1098463723
+ 333 00f8 D4D387BD 		.word	-1115171884
+ 334 00fc 726D083E 		.word	1040739698
+ 335 0100 26AAA73E 		.word	1051175462
+ 336 0104 8B37023F 		.word	1057109899
+ 337 0108 F1682B3F 		.word	1059809521
+ 338 010c 87C44D3F 		.word	1062061191
+ 339 0110 57EC673F 		.word	1063775319
+ 340 0114 A6D5783F 		.word	1064883622
+ 341 0118 C8D27F3F 		.word	1065341640
+ 342 011c F59C7C3F 		.word	1065131253
+ 343 0120 9B556F3F 		.word	1064261019
+ 344 0124 1283583F 		.word	1062765330
+ 345 0128 AA0E393F 		.word	1060703914
+ 346 012c 2A3A123F 		.word	1058159146
+ 347 0130 8121CB3E 		.word	1053499777
+ 348 0134 DF6C533E 		.word	1045654751
+ 349 0138 1578023C 		.word	1006794773
+ 350 013c CE7043BE 		.word	-1102876466
+ 351 0140 AE9EC3BE 		.word	-1094476114
+ 352 0144 5DDC0EBF 		.word	-1089545123
+ 353 0148 DF3736BF 		.word	-1086965793
+ 354 014c CF4E56BF 		.word	-1084862769
+ 355 0150 CFDA6DBF 		.word	-1083319601
+ 356 0154 03EC7BBF 		.word	-1082397693
+ 357 0158 EDF07FBF 		.word	-1082134291
+ 358 015c E3C279BF 		.word	-1082539293
+ 359 0160 D89E69BF 		.word	-1083597096
+ 360 0164 412B50BF 		.word	-1085265087
+ 361 0168 556A2EBF 		.word	-1087477163
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 13
+
+
+ 362 016c 1CB605BF 		.word	-1090144740
+ 363 0170 8A59AFBE 		.word	-1095804534
+ 364 0174 759318BE 		.word	-1105685643
+ 365 0178 59884E3D 		.word	1028556889
+ 366 017c 26C77D3E 		.word	1048430374
+ 367 0180 D1E8DE3E 		.word	1054795985
+ 368 0184 AB041B3F 		.word	1058735275
+ 369 0188 E466403F 		.word	1061185252
+ 370 018c A81D5E3F 		.word	1063132584
+ 371 0190 87F9723F 		.word	1064499591
+ 372 0194 2D267E3F 		.word	1065231917
+ 373 0198 40307F3F 		.word	1065300032
+ 374 019c ED0D763F 		.word	1064701421
+ 375 01a0 EB1C633F 		.word	1063460075
+ 376 01a4 3F1D473F 		.word	1061625151
+ 377 01a8 F52D233F 		.word	1059270133
+ 378 01ac CC7AF13E 		.word	1056013004
+ 379 01b0 38F8923E 		.word	1049819192
+ 380 01b4 BE69BA3D 		.word	1035626942
+ 381 01b8 A67EDEBD 		.word	-1109492058
+ 382 01bc A5A09BBE 		.word	-1097097051
+ 383 01c0 596EF9BE 		.word	-1090949543
+ 384 01c4 51A526BF 		.word	-1087986351
+ 385 01c8 CCEE49BF 		.word	-1085673780
+ 386 01cc 2C2B65BF 		.word	-1083888852
+ 387 01d0 914477BF 		.word	-1082702703
+ 388 01d4 2C827FBF 		.word	-1082162644
+ 389 01d8 C1907DBF 		.word	-1082289983
+ 390 01dc AA8271BF 		.word	-1083080022
+ 391 01e0 6BD45BBF 		.word	-1084500885
+ 392 01e4 39623DBF 		.word	-1086496199
+ 393 01e8 5E6317BF 		.word	-1088986274
+ 394 01ec 5BB6D6BE 		.word	-1093224869
+ 395 01f0 832F6CBE 		.word	-1100206205
+ 396              		.section	.rodata.str1.4,"aMS",%progbits,1
+ 397              		.align	2
+ 398              	.LC0:
+ 399 0000 47424D32 		.ascii	"GBM2100\000"
+ 399      31303000 
+ 400              	.LC1:
+ 401 0008 4C61626F 		.ascii	"Laboratoire 3\000"
+ 401      7261746F 
+ 401      69726520 
+ 401      3300
+ 402              		.bss
+ 403              		.align	2
+ 404              		.set	.LANCHOR0,. + 0
+ 405              		.type	imageBufferCache, %object
+ 406              		.size	imageBufferCache, 5808
+ 407              	imageBufferCache:
+ 408 0000 00000000 		.space	5808
+ 408      00000000 
+ 408      00000000 
+ 408      00000000 
+ 408      00000000 
+ 409              		.text
+ 410              	.Letext0:
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 14
+
+
+ 411              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.4\\psoc creator\\import\\gnu\\arm\\5.4.
+ 412              		.file 4 "c:\\program files (x86)\\cypress\\psoc creator\\4.4\\psoc creator\\import\\gnu\\arm\\5.4.
+ 413              		.file 5 "Generated_Source\\PSoC6\\pdl\\drivers/peripheral/device/cy_device.h"
+ 414              		.file 6 "Generated_Source\\PSoC6\\pdl\\drivers/peripheral/syslib/cy_syslib.h"
+ 415              		.file 7 "Generated_Source\\PSoC6\\pdl\\drivers/peripheral/scb/cy_scb_spi.h"
+ 416              		.file 8 "Generated_Source\\PSoC6\\pdl\\drivers/peripheral/tcpwm/cy_tcpwm_counter.h"
+ 417              		.file 9 "Generated_Source\\PSoC6\\pdl\\middleware/emWin/code/include/GUI_Type.h"
+ 418              		.file 10 ".\\eInk Library/pervasive_eink_hardware_driver.h"
+ 419              		.file 11 ".\\eInk Library/cy_eink_library.h"
+ 420              		.file 12 "Generated_Source\\PSoC6\\pdl\\cmsis/include/core_cm4.h"
+ 421              		.file 13 "Generated_Source\\PSoC6/CY_EINK_SPIM.h"
+ 422              		.file 14 "Generated_Source\\PSoC6/CY_EINK_Timer.h"
+ 423              		.file 15 "Generated_Source\\PSoC6\\pdl\\middleware/emWin/code/include/GUI.h"
+ 424              		.file 16 "LCDConf.h"
+ 425              		.file 17 "Generated_Source\\PSoC6/Status_SW2.h"
+ 426              		.section	.debug_info,"",%progbits
+ 427              	.Ldebug_info0:
+ 428 0000 73100000 		.4byte	0x1073
+ 429 0004 0400     		.2byte	0x4
+ 430 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 431 000a 04       		.byte	0x4
+ 432 000b 01       		.uleb128 0x1
+ 433 000c D8070000 		.4byte	.LASF234
+ 434 0010 0C       		.byte	0xc
+ 435 0011 460D0000 		.4byte	.LASF235
+ 436 0015 510D0000 		.4byte	.LASF236
+ 437 0019 00000000 		.4byte	.Ldebug_ranges0+0
+ 438 001d 00000000 		.4byte	0
+ 439 0021 00000000 		.4byte	.Ldebug_line0
+ 440 0025 02       		.uleb128 0x2
+ 441 0026 02       		.byte	0x2
+ 442 0027 05       		.byte	0x5
+ 443 0028 24060000 		.4byte	.LASF0
+ 444 002c 02       		.uleb128 0x2
+ 445 002d 01       		.byte	0x1
+ 446 002e 06       		.byte	0x6
+ 447 002f 0C0D0000 		.4byte	.LASF1
+ 448 0033 03       		.uleb128 0x3
+ 449 0034 CC000000 		.4byte	.LASF3
+ 450 0038 03       		.byte	0x3
+ 451 0039 1D       		.byte	0x1d
+ 452 003a 3E000000 		.4byte	0x3e
+ 453 003e 02       		.uleb128 0x2
+ 454 003f 01       		.byte	0x1
+ 455 0040 08       		.byte	0x8
+ 456 0041 1E090000 		.4byte	.LASF2
+ 457 0045 03       		.uleb128 0x3
+ 458 0046 6E040000 		.4byte	.LASF4
+ 459 004a 03       		.byte	0x3
+ 460 004b 29       		.byte	0x29
+ 461 004c 25000000 		.4byte	0x25
+ 462 0050 03       		.uleb128 0x3
+ 463 0051 E00A0000 		.4byte	.LASF5
+ 464 0055 03       		.byte	0x3
+ 465 0056 2B       		.byte	0x2b
+ 466 0057 5B000000 		.4byte	0x5b
+ 467 005b 02       		.uleb128 0x2
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 15
+
+
+ 468 005c 02       		.byte	0x2
+ 469 005d 07       		.byte	0x7
+ 470 005e 720B0000 		.4byte	.LASF6
+ 471 0062 03       		.uleb128 0x3
+ 472 0063 2E060000 		.4byte	.LASF7
+ 473 0067 03       		.byte	0x3
+ 474 0068 3F       		.byte	0x3f
+ 475 0069 6D000000 		.4byte	0x6d
+ 476 006d 02       		.uleb128 0x2
+ 477 006e 04       		.byte	0x4
+ 478 006f 05       		.byte	0x5
+ 479 0070 030D0000 		.4byte	.LASF8
+ 480 0074 03       		.uleb128 0x3
+ 481 0075 2B040000 		.4byte	.LASF9
+ 482 0079 03       		.byte	0x3
+ 483 007a 41       		.byte	0x41
+ 484 007b 7F000000 		.4byte	0x7f
+ 485 007f 02       		.uleb128 0x2
+ 486 0080 04       		.byte	0x4
+ 487 0081 07       		.byte	0x7
+ 488 0082 1C050000 		.4byte	.LASF10
+ 489 0086 02       		.uleb128 0x2
+ 490 0087 08       		.byte	0x8
+ 491 0088 05       		.byte	0x5
+ 492 0089 A7040000 		.4byte	.LASF11
+ 493 008d 02       		.uleb128 0x2
+ 494 008e 08       		.byte	0x8
+ 495 008f 07       		.byte	0x7
+ 496 0090 9B020000 		.4byte	.LASF12
+ 497 0094 04       		.uleb128 0x4
+ 498 0095 04       		.byte	0x4
+ 499 0096 05       		.byte	0x5
+ 500 0097 696E7400 		.ascii	"int\000"
+ 501 009b 02       		.uleb128 0x2
+ 502 009c 04       		.byte	0x4
+ 503 009d 07       		.byte	0x7
+ 504 009e FD040000 		.4byte	.LASF13
+ 505 00a2 03       		.uleb128 0x3
+ 506 00a3 560C0000 		.4byte	.LASF14
+ 507 00a7 04       		.byte	0x4
+ 508 00a8 18       		.byte	0x18
+ 509 00a9 33000000 		.4byte	0x33
+ 510 00ad 03       		.uleb128 0x3
+ 511 00ae 1C020000 		.4byte	.LASF15
+ 512 00b2 04       		.byte	0x4
+ 513 00b3 20       		.byte	0x20
+ 514 00b4 45000000 		.4byte	0x45
+ 515 00b8 03       		.uleb128 0x3
+ 516 00b9 62030000 		.4byte	.LASF16
+ 517 00bd 04       		.byte	0x4
+ 518 00be 24       		.byte	0x24
+ 519 00bf 50000000 		.4byte	0x50
+ 520 00c3 03       		.uleb128 0x3
+ 521 00c4 16090000 		.4byte	.LASF17
+ 522 00c8 04       		.byte	0x4
+ 523 00c9 2C       		.byte	0x2c
+ 524 00ca 62000000 		.4byte	0x62
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 16
+
+
+ 525 00ce 03       		.uleb128 0x3
+ 526 00cf EF0B0000 		.4byte	.LASF18
+ 527 00d3 04       		.byte	0x4
+ 528 00d4 30       		.byte	0x30
+ 529 00d5 74000000 		.4byte	0x74
+ 530 00d9 02       		.uleb128 0x2
+ 531 00da 04       		.byte	0x4
+ 532 00db 07       		.byte	0x7
+ 533 00dc BD060000 		.4byte	.LASF19
+ 534 00e0 05       		.uleb128 0x5
+ 535 00e1 CE000000 		.4byte	0xce
+ 536 00e5 02       		.uleb128 0x2
+ 537 00e6 08       		.byte	0x8
+ 538 00e7 04       		.byte	0x4
+ 539 00e8 E1060000 		.4byte	.LASF20
+ 540 00ec 06       		.uleb128 0x6
+ 541 00ed B8       		.byte	0xb8
+ 542 00ee 05       		.byte	0x5
+ 543 00ef 34       		.byte	0x34
+ 544 00f0 FD040000 		.4byte	0x4fd
+ 545 00f4 07       		.uleb128 0x7
+ 546 00f5 35010000 		.4byte	.LASF21
+ 547 00f9 05       		.byte	0x5
+ 548 00fa 37       		.byte	0x37
+ 549 00fb CE000000 		.4byte	0xce
+ 550 00ff 00       		.byte	0
+ 551 0100 07       		.uleb128 0x7
+ 552 0101 E3090000 		.4byte	.LASF22
+ 553 0105 05       		.byte	0x5
+ 554 0106 38       		.byte	0x38
+ 555 0107 CE000000 		.4byte	0xce
+ 556 010b 04       		.byte	0x4
+ 557 010c 07       		.uleb128 0x7
+ 558 010d 22040000 		.4byte	.LASF23
+ 559 0111 05       		.byte	0x5
+ 560 0112 39       		.byte	0x39
+ 561 0113 CE000000 		.4byte	0xce
+ 562 0117 08       		.byte	0x8
+ 563 0118 07       		.uleb128 0x7
+ 564 0119 00020000 		.4byte	.LASF24
+ 565 011d 05       		.byte	0x5
+ 566 011e 3A       		.byte	0x3a
+ 567 011f CE000000 		.4byte	0xce
+ 568 0123 0C       		.byte	0xc
+ 569 0124 07       		.uleb128 0x7
+ 570 0125 49060000 		.4byte	.LASF25
+ 571 0129 05       		.byte	0x5
+ 572 012a 3B       		.byte	0x3b
+ 573 012b CE000000 		.4byte	0xce
+ 574 012f 10       		.byte	0x10
+ 575 0130 07       		.uleb128 0x7
+ 576 0131 FB020000 		.4byte	.LASF26
+ 577 0135 05       		.byte	0x5
+ 578 0136 3C       		.byte	0x3c
+ 579 0137 CE000000 		.4byte	0xce
+ 580 013b 14       		.byte	0x14
+ 581 013c 07       		.uleb128 0x7
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 17
+
+
+ 582 013d C50B0000 		.4byte	.LASF27
+ 583 0141 05       		.byte	0x5
+ 584 0142 3D       		.byte	0x3d
+ 585 0143 CE000000 		.4byte	0xce
+ 586 0147 18       		.byte	0x18
+ 587 0148 07       		.uleb128 0x7
+ 588 0149 ED060000 		.4byte	.LASF28
+ 589 014d 05       		.byte	0x5
+ 590 014e 3E       		.byte	0x3e
+ 591 014f CE000000 		.4byte	0xce
+ 592 0153 1C       		.byte	0x1c
+ 593 0154 07       		.uleb128 0x7
+ 594 0155 180D0000 		.4byte	.LASF29
+ 595 0159 05       		.byte	0x5
+ 596 015a 3F       		.byte	0x3f
+ 597 015b CE000000 		.4byte	0xce
+ 598 015f 20       		.byte	0x20
+ 599 0160 07       		.uleb128 0x7
+ 600 0161 83060000 		.4byte	.LASF30
+ 601 0165 05       		.byte	0x5
+ 602 0166 40       		.byte	0x40
+ 603 0167 CE000000 		.4byte	0xce
+ 604 016b 24       		.byte	0x24
+ 605 016c 07       		.uleb128 0x7
+ 606 016d B0060000 		.4byte	.LASF31
+ 607 0171 05       		.byte	0x5
+ 608 0172 43       		.byte	0x43
+ 609 0173 A2000000 		.4byte	0xa2
+ 610 0177 28       		.byte	0x28
+ 611 0178 07       		.uleb128 0x7
+ 612 0179 80000000 		.4byte	.LASF32
+ 613 017d 05       		.byte	0x5
+ 614 017e 44       		.byte	0x44
+ 615 017f A2000000 		.4byte	0xa2
+ 616 0183 29       		.byte	0x29
+ 617 0184 07       		.uleb128 0x7
+ 618 0185 1C0B0000 		.4byte	.LASF33
+ 619 0189 05       		.byte	0x5
+ 620 018a 45       		.byte	0x45
+ 621 018b A2000000 		.4byte	0xa2
+ 622 018f 2A       		.byte	0x2a
+ 623 0190 07       		.uleb128 0x7
+ 624 0191 B0070000 		.4byte	.LASF34
+ 625 0195 05       		.byte	0x5
+ 626 0196 46       		.byte	0x46
+ 627 0197 A2000000 		.4byte	0xa2
+ 628 019b 2B       		.byte	0x2b
+ 629 019c 07       		.uleb128 0x7
+ 630 019d DE050000 		.4byte	.LASF35
+ 631 01a1 05       		.byte	0x5
+ 632 01a2 47       		.byte	0x47
+ 633 01a3 A2000000 		.4byte	0xa2
+ 634 01a7 2C       		.byte	0x2c
+ 635 01a8 07       		.uleb128 0x7
+ 636 01a9 2D0B0000 		.4byte	.LASF36
+ 637 01ad 05       		.byte	0x5
+ 638 01ae 48       		.byte	0x48
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 18
+
+
+ 639 01af A2000000 		.4byte	0xa2
+ 640 01b3 2D       		.byte	0x2d
+ 641 01b4 07       		.uleb128 0x7
+ 642 01b5 9E090000 		.4byte	.LASF37
+ 643 01b9 05       		.byte	0x5
+ 644 01ba 49       		.byte	0x49
+ 645 01bb A2000000 		.4byte	0xa2
+ 646 01bf 2E       		.byte	0x2e
+ 647 01c0 07       		.uleb128 0x7
+ 648 01c1 98060000 		.4byte	.LASF38
+ 649 01c5 05       		.byte	0x5
+ 650 01c6 4A       		.byte	0x4a
+ 651 01c7 A2000000 		.4byte	0xa2
+ 652 01cb 2F       		.byte	0x2f
+ 653 01cc 07       		.uleb128 0x7
+ 654 01cd 58070000 		.4byte	.LASF39
+ 655 01d1 05       		.byte	0x5
+ 656 01d2 4B       		.byte	0x4b
+ 657 01d3 A2000000 		.4byte	0xa2
+ 658 01d7 30       		.byte	0x30
+ 659 01d8 07       		.uleb128 0x7
+ 660 01d9 3B050000 		.4byte	.LASF40
+ 661 01dd 05       		.byte	0x5
+ 662 01de 4E       		.byte	0x4e
+ 663 01df A2000000 		.4byte	0xa2
+ 664 01e3 31       		.byte	0x31
+ 665 01e4 07       		.uleb128 0x7
+ 666 01e5 BE000000 		.4byte	.LASF41
+ 667 01e9 05       		.byte	0x5
+ 668 01ea 4F       		.byte	0x4f
+ 669 01eb A2000000 		.4byte	0xa2
+ 670 01ef 32       		.byte	0x32
+ 671 01f0 07       		.uleb128 0x7
+ 672 01f1 53050000 		.4byte	.LASF42
+ 673 01f5 05       		.byte	0x5
+ 674 01f6 50       		.byte	0x50
+ 675 01f7 A2000000 		.4byte	0xa2
+ 676 01fb 33       		.byte	0x33
+ 677 01fc 07       		.uleb128 0x7
+ 678 01fd E3000000 		.4byte	.LASF43
+ 679 0201 05       		.byte	0x5
+ 680 0202 51       		.byte	0x51
+ 681 0203 A2000000 		.4byte	0xa2
+ 682 0207 34       		.byte	0x34
+ 683 0208 07       		.uleb128 0x7
+ 684 0209 AB0B0000 		.4byte	.LASF44
+ 685 020d 05       		.byte	0x5
+ 686 020e 52       		.byte	0x52
+ 687 020f AD000000 		.4byte	0xad
+ 688 0213 36       		.byte	0x36
+ 689 0214 07       		.uleb128 0x7
+ 690 0215 200A0000 		.4byte	.LASF45
+ 691 0219 05       		.byte	0x5
+ 692 021a 53       		.byte	0x53
+ 693 021b AD000000 		.4byte	0xad
+ 694 021f 38       		.byte	0x38
+ 695 0220 07       		.uleb128 0x7
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 19
+
+
+ 696 0221 1E0C0000 		.4byte	.LASF46
+ 697 0225 05       		.byte	0x5
+ 698 0226 54       		.byte	0x54
+ 699 0227 AD000000 		.4byte	0xad
+ 700 022b 3A       		.byte	0x3a
+ 701 022c 07       		.uleb128 0x7
+ 702 022d F40C0000 		.4byte	.LASF47
+ 703 0231 05       		.byte	0x5
+ 704 0232 55       		.byte	0x55
+ 705 0233 A2000000 		.4byte	0xa2
+ 706 0237 3C       		.byte	0x3c
+ 707 0238 07       		.uleb128 0x7
+ 708 0239 98030000 		.4byte	.LASF48
+ 709 023d 05       		.byte	0x5
+ 710 023e 56       		.byte	0x56
+ 711 023f A2000000 		.4byte	0xa2
+ 712 0243 3D       		.byte	0x3d
+ 713 0244 07       		.uleb128 0x7
+ 714 0245 F3090000 		.4byte	.LASF49
+ 715 0249 05       		.byte	0x5
+ 716 024a 57       		.byte	0x57
+ 717 024b A2000000 		.4byte	0xa2
+ 718 024f 3E       		.byte	0x3e
+ 719 0250 07       		.uleb128 0x7
+ 720 0251 51010000 		.4byte	.LASF50
+ 721 0255 05       		.byte	0x5
+ 722 0256 58       		.byte	0x58
+ 723 0257 A2000000 		.4byte	0xa2
+ 724 025b 3F       		.byte	0x3f
+ 725 025c 07       		.uleb128 0x7
+ 726 025d BE070000 		.4byte	.LASF51
+ 727 0261 05       		.byte	0x5
+ 728 0262 59       		.byte	0x59
+ 729 0263 A2000000 		.4byte	0xa2
+ 730 0267 40       		.byte	0x40
+ 731 0268 07       		.uleb128 0x7
+ 732 0269 36040000 		.4byte	.LASF52
+ 733 026d 05       		.byte	0x5
+ 734 026e 5A       		.byte	0x5a
+ 735 026f A2000000 		.4byte	0xa2
+ 736 0273 41       		.byte	0x41
+ 737 0274 07       		.uleb128 0x7
+ 738 0275 3F070000 		.4byte	.LASF53
+ 739 0279 05       		.byte	0x5
+ 740 027a 5B       		.byte	0x5b
+ 741 027b A2000000 		.4byte	0xa2
+ 742 027f 42       		.byte	0x42
+ 743 0280 07       		.uleb128 0x7
+ 744 0281 8A070000 		.4byte	.LASF54
+ 745 0285 05       		.byte	0x5
+ 746 0286 5C       		.byte	0x5c
+ 747 0287 A2000000 		.4byte	0xa2
+ 748 028b 43       		.byte	0x43
+ 749 028c 07       		.uleb128 0x7
+ 750 028d 51030000 		.4byte	.LASF55
+ 751 0291 05       		.byte	0x5
+ 752 0292 5D       		.byte	0x5d
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 20
+
+
+ 753 0293 A2000000 		.4byte	0xa2
+ 754 0297 44       		.byte	0x44
+ 755 0298 07       		.uleb128 0x7
+ 756 0299 24030000 		.4byte	.LASF56
+ 757 029d 05       		.byte	0x5
+ 758 029e 5E       		.byte	0x5e
+ 759 029f CE000000 		.4byte	0xce
+ 760 02a3 48       		.byte	0x48
+ 761 02a4 07       		.uleb128 0x7
+ 762 02a5 36030000 		.4byte	.LASF57
+ 763 02a9 05       		.byte	0x5
+ 764 02aa 5F       		.byte	0x5f
+ 765 02ab CE000000 		.4byte	0xce
+ 766 02af 4C       		.byte	0x4c
+ 767 02b0 07       		.uleb128 0x7
+ 768 02b1 930D0000 		.4byte	.LASF58
+ 769 02b5 05       		.byte	0x5
+ 770 02b6 60       		.byte	0x60
+ 771 02b7 A2000000 		.4byte	0xa2
+ 772 02bb 50       		.byte	0x50
+ 773 02bc 07       		.uleb128 0x7
+ 774 02bd EE010000 		.4byte	.LASF59
+ 775 02c1 05       		.byte	0x5
+ 776 02c2 61       		.byte	0x61
+ 777 02c3 A2000000 		.4byte	0xa2
+ 778 02c7 51       		.byte	0x51
+ 779 02c8 07       		.uleb128 0x7
+ 780 02c9 390C0000 		.4byte	.LASF60
+ 781 02cd 05       		.byte	0x5
+ 782 02ce 62       		.byte	0x62
+ 783 02cf A2000000 		.4byte	0xa2
+ 784 02d3 52       		.byte	0x52
+ 785 02d4 07       		.uleb128 0x7
+ 786 02d5 250D0000 		.4byte	.LASF61
+ 787 02d9 05       		.byte	0x5
+ 788 02da 63       		.byte	0x63
+ 789 02db A2000000 		.4byte	0xa2
+ 790 02df 53       		.byte	0x53
+ 791 02e0 07       		.uleb128 0x7
+ 792 02e1 100A0000 		.4byte	.LASF62
+ 793 02e5 05       		.byte	0x5
+ 794 02e6 64       		.byte	0x64
+ 795 02e7 A2000000 		.4byte	0xa2
+ 796 02eb 54       		.byte	0x54
+ 797 02ec 07       		.uleb128 0x7
+ 798 02ed 08020000 		.4byte	.LASF63
+ 799 02f1 05       		.byte	0x5
+ 800 02f2 65       		.byte	0x65
+ 801 02f3 A2000000 		.4byte	0xa2
+ 802 02f7 55       		.byte	0x55
+ 803 02f8 07       		.uleb128 0x7
+ 804 02f9 BB0A0000 		.4byte	.LASF64
+ 805 02fd 05       		.byte	0x5
+ 806 02fe 66       		.byte	0x66
+ 807 02ff A2000000 		.4byte	0xa2
+ 808 0303 56       		.byte	0x56
+ 809 0304 07       		.uleb128 0x7
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 21
+
+
+ 810 0305 70050000 		.4byte	.LASF65
+ 811 0309 05       		.byte	0x5
+ 812 030a 67       		.byte	0x67
+ 813 030b A2000000 		.4byte	0xa2
+ 814 030f 57       		.byte	0x57
+ 815 0310 07       		.uleb128 0x7
+ 816 0311 45000000 		.4byte	.LASF66
+ 817 0315 05       		.byte	0x5
+ 818 0316 68       		.byte	0x68
+ 819 0317 A2000000 		.4byte	0xa2
+ 820 031b 58       		.byte	0x58
+ 821 031c 07       		.uleb128 0x7
+ 822 031d 32090000 		.4byte	.LASF67
+ 823 0321 05       		.byte	0x5
+ 824 0322 69       		.byte	0x69
+ 825 0323 A2000000 		.4byte	0xa2
+ 826 0327 59       		.byte	0x59
+ 827 0328 07       		.uleb128 0x7
+ 828 0329 D6060000 		.4byte	.LASF68
+ 829 032d 05       		.byte	0x5
+ 830 032e 6E       		.byte	0x6e
+ 831 032f B8000000 		.4byte	0xb8
+ 832 0333 5A       		.byte	0x5a
+ 833 0334 07       		.uleb128 0x7
+ 834 0335 850B0000 		.4byte	.LASF69
+ 835 0339 05       		.byte	0x5
+ 836 033a 6F       		.byte	0x6f
+ 837 033b B8000000 		.4byte	0xb8
+ 838 033f 5C       		.byte	0x5c
+ 839 0340 07       		.uleb128 0x7
+ 840 0341 8E000000 		.4byte	.LASF70
+ 841 0345 05       		.byte	0x5
+ 842 0346 70       		.byte	0x70
+ 843 0347 A2000000 		.4byte	0xa2
+ 844 034b 5E       		.byte	0x5e
+ 845 034c 07       		.uleb128 0x7
+ 846 034d D4080000 		.4byte	.LASF71
+ 847 0351 05       		.byte	0x5
+ 848 0352 71       		.byte	0x71
+ 849 0353 A2000000 		.4byte	0xa2
+ 850 0357 5F       		.byte	0x5f
+ 851 0358 07       		.uleb128 0x7
+ 852 0359 64070000 		.4byte	.LASF72
+ 853 035d 05       		.byte	0x5
+ 854 035e 72       		.byte	0x72
+ 855 035f A2000000 		.4byte	0xa2
+ 856 0363 60       		.byte	0x60
+ 857 0364 07       		.uleb128 0x7
+ 858 0365 91080000 		.4byte	.LASF73
+ 859 0369 05       		.byte	0x5
+ 860 036a 73       		.byte	0x73
+ 861 036b CE000000 		.4byte	0xce
+ 862 036f 64       		.byte	0x64
+ 863 0370 07       		.uleb128 0x7
+ 864 0371 92010000 		.4byte	.LASF74
+ 865 0375 05       		.byte	0x5
+ 866 0376 76       		.byte	0x76
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 22
+
+
+ 867 0377 B8000000 		.4byte	0xb8
+ 868 037b 68       		.byte	0x68
+ 869 037c 07       		.uleb128 0x7
+ 870 037d 0A050000 		.4byte	.LASF75
+ 871 0381 05       		.byte	0x5
+ 872 0382 77       		.byte	0x77
+ 873 0383 B8000000 		.4byte	0xb8
+ 874 0387 6A       		.byte	0x6a
+ 875 0388 07       		.uleb128 0x7
+ 876 0389 84050000 		.4byte	.LASF76
+ 877 038d 05       		.byte	0x5
+ 878 038e 78       		.byte	0x78
+ 879 038f B8000000 		.4byte	0xb8
+ 880 0393 6C       		.byte	0x6c
+ 881 0394 07       		.uleb128 0x7
+ 882 0395 2E050000 		.4byte	.LASF77
+ 883 0399 05       		.byte	0x5
+ 884 039a 79       		.byte	0x79
+ 885 039b B8000000 		.4byte	0xb8
+ 886 039f 6E       		.byte	0x6e
+ 887 03a0 07       		.uleb128 0x7
+ 888 03a1 B6090000 		.4byte	.LASF78
+ 889 03a5 05       		.byte	0x5
+ 890 03a6 7B       		.byte	0x7b
+ 891 03a7 A2000000 		.4byte	0xa2
+ 892 03ab 70       		.byte	0x70
+ 893 03ac 07       		.uleb128 0x7
+ 894 03ad 62020000 		.4byte	.LASF79
+ 895 03b1 05       		.byte	0x5
+ 896 03b2 7C       		.byte	0x7c
+ 897 03b3 A2000000 		.4byte	0xa2
+ 898 03b7 71       		.byte	0x71
+ 899 03b8 07       		.uleb128 0x7
+ 900 03b9 91040000 		.4byte	.LASF80
+ 901 03bd 05       		.byte	0x5
+ 902 03be 7D       		.byte	0x7d
+ 903 03bf A2000000 		.4byte	0xa2
+ 904 03c3 72       		.byte	0x72
+ 905 03c4 07       		.uleb128 0x7
+ 906 03c5 28070000 		.4byte	.LASF81
+ 907 03c9 05       		.byte	0x5
+ 908 03ca 7E       		.byte	0x7e
+ 909 03cb A2000000 		.4byte	0xa2
+ 910 03cf 73       		.byte	0x73
+ 911 03d0 07       		.uleb128 0x7
+ 912 03d1 BA030000 		.4byte	.LASF82
+ 913 03d5 05       		.byte	0x5
+ 914 03d6 80       		.byte	0x80
+ 915 03d7 B8000000 		.4byte	0xb8
+ 916 03db 74       		.byte	0x74
+ 917 03dc 07       		.uleb128 0x7
+ 918 03dd F10A0000 		.4byte	.LASF83
+ 919 03e1 05       		.byte	0x5
+ 920 03e2 81       		.byte	0x81
+ 921 03e3 B8000000 		.4byte	0xb8
+ 922 03e7 76       		.byte	0x76
+ 923 03e8 07       		.uleb128 0x7
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 23
+
+
+ 924 03e9 83030000 		.4byte	.LASF84
+ 925 03ed 05       		.byte	0x5
+ 926 03ee 82       		.byte	0x82
+ 927 03ef B8000000 		.4byte	0xb8
+ 928 03f3 78       		.byte	0x78
+ 929 03f4 07       		.uleb128 0x7
+ 930 03f5 53090000 		.4byte	.LASF85
+ 931 03f9 05       		.byte	0x5
+ 932 03fa 83       		.byte	0x83
+ 933 03fb B8000000 		.4byte	0xb8
+ 934 03ff 7A       		.byte	0x7a
+ 935 0400 07       		.uleb128 0x7
+ 936 0401 7A0C0000 		.4byte	.LASF86
+ 937 0405 05       		.byte	0x5
+ 938 0406 86       		.byte	0x86
+ 939 0407 A2000000 		.4byte	0xa2
+ 940 040b 7C       		.byte	0x7c
+ 941 040c 07       		.uleb128 0x7
+ 942 040d AA050000 		.4byte	.LASF87
+ 943 0411 05       		.byte	0x5
+ 944 0412 87       		.byte	0x87
+ 945 0413 A2000000 		.4byte	0xa2
+ 946 0417 7D       		.byte	0x7d
+ 947 0418 07       		.uleb128 0x7
+ 948 0419 59000000 		.4byte	.LASF88
+ 949 041d 05       		.byte	0x5
+ 950 041e 88       		.byte	0x88
+ 951 041f A2000000 		.4byte	0xa2
+ 952 0423 7E       		.byte	0x7e
+ 953 0424 07       		.uleb128 0x7
+ 954 0425 E5030000 		.4byte	.LASF89
+ 955 0429 05       		.byte	0x5
+ 956 042a 89       		.byte	0x89
+ 957 042b A2000000 		.4byte	0xa2
+ 958 042f 7F       		.byte	0x7f
+ 959 0430 07       		.uleb128 0x7
+ 960 0431 D4040000 		.4byte	.LASF90
+ 961 0435 05       		.byte	0x5
+ 962 0436 8A       		.byte	0x8a
+ 963 0437 A2000000 		.4byte	0xa2
+ 964 043b 80       		.byte	0x80
+ 965 043c 07       		.uleb128 0x7
+ 966 043d 61060000 		.4byte	.LASF91
+ 967 0441 05       		.byte	0x5
+ 968 0442 8D       		.byte	0x8d
+ 969 0443 CE000000 		.4byte	0xce
+ 970 0447 84       		.byte	0x84
+ 971 0448 07       		.uleb128 0x7
+ 972 0449 F4000000 		.4byte	.LASF92
+ 973 044d 05       		.byte	0x5
+ 974 044e 8E       		.byte	0x8e
+ 975 044f CE000000 		.4byte	0xce
+ 976 0453 88       		.byte	0x88
+ 977 0454 07       		.uleb128 0x7
+ 978 0455 650C0000 		.4byte	.LASF93
+ 979 0459 05       		.byte	0x5
+ 980 045a 8F       		.byte	0x8f
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 24
+
+
+ 981 045b CE000000 		.4byte	0xce
+ 982 045f 8C       		.byte	0x8c
+ 983 0460 07       		.uleb128 0x7
+ 984 0461 E8040000 		.4byte	.LASF94
+ 985 0465 05       		.byte	0x5
+ 986 0466 90       		.byte	0x90
+ 987 0467 CE000000 		.4byte	0xce
+ 988 046b 90       		.byte	0x90
+ 989 046c 07       		.uleb128 0x7
+ 990 046d B5040000 		.4byte	.LASF95
+ 991 0471 05       		.byte	0x5
+ 992 0472 91       		.byte	0x91
+ 993 0473 CE000000 		.4byte	0xce
+ 994 0477 94       		.byte	0x94
+ 995 0478 07       		.uleb128 0x7
+ 996 0479 85020000 		.4byte	.LASF96
+ 997 047d 05       		.byte	0x5
+ 998 047e 92       		.byte	0x92
+ 999 047f CE000000 		.4byte	0xce
+ 1000 0483 98       		.byte	0x98
+ 1001 0484 07       		.uleb128 0x7
+ 1002 0485 D50C0000 		.4byte	.LASF97
+ 1003 0489 05       		.byte	0x5
+ 1004 048a 93       		.byte	0x93
+ 1005 048b CE000000 		.4byte	0xce
+ 1006 048f 9C       		.byte	0x9c
+ 1007 0490 07       		.uleb128 0x7
+ 1008 0491 A2010000 		.4byte	.LASF98
+ 1009 0495 05       		.byte	0x5
+ 1010 0496 94       		.byte	0x94
+ 1011 0497 CE000000 		.4byte	0xce
+ 1012 049b A0       		.byte	0xa0
+ 1013 049c 07       		.uleb128 0x7
+ 1014 049d D9010000 		.4byte	.LASF99
+ 1015 04a1 05       		.byte	0x5
+ 1016 04a2 95       		.byte	0x95
+ 1017 04a3 B8000000 		.4byte	0xb8
+ 1018 04a7 A4       		.byte	0xa4
+ 1019 04a8 07       		.uleb128 0x7
+ 1020 04a9 600A0000 		.4byte	.LASF100
+ 1021 04ad 05       		.byte	0x5
+ 1022 04ae 96       		.byte	0x96
+ 1023 04af B8000000 		.4byte	0xb8
+ 1024 04b3 A6       		.byte	0xa6
+ 1025 04b4 07       		.uleb128 0x7
+ 1026 04b5 BD080000 		.4byte	.LASF101
+ 1027 04b9 05       		.byte	0x5
+ 1028 04ba 97       		.byte	0x97
+ 1029 04bb B8000000 		.4byte	0xb8
+ 1030 04bf A8       		.byte	0xa8
+ 1031 04c0 07       		.uleb128 0x7
+ 1032 04c1 89090000 		.4byte	.LASF102
+ 1033 04c5 05       		.byte	0x5
+ 1034 04c6 98       		.byte	0x98
+ 1035 04c7 B8000000 		.4byte	0xb8
+ 1036 04cb AA       		.byte	0xaa
+ 1037 04cc 07       		.uleb128 0x7
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 25
+
+
+ 1038 04cd 93050000 		.4byte	.LASF103
+ 1039 04d1 05       		.byte	0x5
+ 1040 04d2 99       		.byte	0x99
+ 1041 04d3 B8000000 		.4byte	0xb8
+ 1042 04d7 AC       		.byte	0xac
+ 1043 04d8 07       		.uleb128 0x7
+ 1044 04d9 B0000000 		.4byte	.LASF104
+ 1045 04dd 05       		.byte	0x5
+ 1046 04de 9A       		.byte	0x9a
+ 1047 04df B8000000 		.4byte	0xb8
+ 1048 04e3 AE       		.byte	0xae
+ 1049 04e4 07       		.uleb128 0x7
+ 1050 04e5 9D0B0000 		.4byte	.LASF105
+ 1051 04e9 05       		.byte	0x5
+ 1052 04ea 9D       		.byte	0x9d
+ 1053 04eb B8000000 		.4byte	0xb8
+ 1054 04ef B0       		.byte	0xb0
+ 1055 04f0 07       		.uleb128 0x7
+ 1056 04f1 6C000000 		.4byte	.LASF106
+ 1057 04f5 05       		.byte	0x5
+ 1058 04f6 9E       		.byte	0x9e
+ 1059 04f7 CE000000 		.4byte	0xce
+ 1060 04fb B4       		.byte	0xb4
+ 1061 04fc 00       		.byte	0
+ 1062 04fd 03       		.uleb128 0x3
+ 1063 04fe 07060000 		.4byte	.LASF107
+ 1064 0502 05       		.byte	0x5
+ 1065 0503 9F       		.byte	0x9f
+ 1066 0504 EC000000 		.4byte	0xec
+ 1067 0508 02       		.uleb128 0x2
+ 1068 0509 01       		.byte	0x1
+ 1069 050a 08       		.byte	0x8
+ 1070 050b B60A0000 		.4byte	.LASF108
+ 1071 050f 02       		.uleb128 0x2
+ 1072 0510 04       		.byte	0x4
+ 1073 0511 04       		.byte	0x4
+ 1074 0512 8B080000 		.4byte	.LASF109
+ 1075 0516 02       		.uleb128 0x2
+ 1076 0517 08       		.byte	0x8
+ 1077 0518 04       		.byte	0x4
+ 1078 0519 7C030000 		.4byte	.LASF110
+ 1079 051d 08       		.uleb128 0x8
+ 1080 051e 4B030000 		.4byte	.LASF111
+ 1081 0522 06       		.byte	0x6
+ 1082 0523 EA03     		.2byte	0x3ea
+ 1083 0525 A2000000 		.4byte	0xa2
+ 1084 0529 09       		.uleb128 0x9
+ 1085 052a 04       		.byte	0x4
+ 1086 052b 02       		.uleb128 0x2
+ 1087 052c 01       		.byte	0x1
+ 1088 052d 02       		.byte	0x2
+ 1089 052e F80B0000 		.4byte	.LASF112
+ 1090 0532 0A       		.uleb128 0xa
+ 1091 0533 04       		.byte	0x4
+ 1092 0534 38050000 		.4byte	0x538
+ 1093 0538 0B       		.uleb128 0xb
+ 1094 0539 43050000 		.4byte	0x543
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 26
+
+
+ 1095 053d 0C       		.uleb128 0xc
+ 1096 053e CE000000 		.4byte	0xce
+ 1097 0542 00       		.byte	0
+ 1098 0543 08       		.uleb128 0x8
+ 1099 0544 DD020000 		.4byte	.LASF113
+ 1100 0548 07       		.byte	0x7
+ 1101 0549 F201     		.2byte	0x1f2
+ 1102 054b 32050000 		.4byte	0x532
+ 1103 054f 0D       		.uleb128 0xd
+ 1104 0550 4B020000 		.4byte	.LASF124
+ 1105 0554 24       		.byte	0x24
+ 1106 0555 07       		.byte	0x7
+ 1107 0556 7402     		.2byte	0x274
+ 1108 0558 D2050000 		.4byte	0x5d2
+ 1109 055c 0E       		.uleb128 0xe
+ 1110 055d 97090000 		.4byte	.LASF114
+ 1111 0561 07       		.byte	0x7
+ 1112 0562 7702     		.2byte	0x277
+ 1113 0564 E0000000 		.4byte	0xe0
+ 1114 0568 00       		.byte	0
+ 1115 0569 0E       		.uleb128 0xe
+ 1116 056a 46040000 		.4byte	.LASF115
+ 1117 056e 07       		.byte	0x7
+ 1118 056f 7902     		.2byte	0x279
+ 1119 0571 29050000 		.4byte	0x529
+ 1120 0575 04       		.byte	0x4
+ 1121 0576 0E       		.uleb128 0xe
+ 1122 0577 1E070000 		.4byte	.LASF116
+ 1123 057b 07       		.byte	0x7
+ 1124 057c 7A02     		.2byte	0x27a
+ 1125 057e CE000000 		.4byte	0xce
+ 1126 0582 08       		.byte	0x8
+ 1127 0583 0E       		.uleb128 0xe
+ 1128 0584 78040000 		.4byte	.LASF117
+ 1129 0588 07       		.byte	0x7
+ 1130 0589 7B02     		.2byte	0x27b
+ 1131 058b E0000000 		.4byte	0xe0
+ 1132 058f 0C       		.byte	0xc
+ 1133 0590 0E       		.uleb128 0xe
+ 1134 0591 B8010000 		.4byte	.LASF118
+ 1135 0595 07       		.byte	0x7
+ 1136 0596 7D02     		.2byte	0x27d
+ 1137 0598 29050000 		.4byte	0x529
+ 1138 059c 10       		.byte	0x10
+ 1139 059d 0E       		.uleb128 0xe
+ 1140 059e CA040000 		.4byte	.LASF119
+ 1141 05a2 07       		.byte	0x7
+ 1142 05a3 7E02     		.2byte	0x27e
+ 1143 05a5 CE000000 		.4byte	0xce
+ 1144 05a9 14       		.byte	0x14
+ 1145 05aa 0E       		.uleb128 0xe
+ 1146 05ab CA090000 		.4byte	.LASF120
+ 1147 05af 07       		.byte	0x7
+ 1148 05b0 7F02     		.2byte	0x27f
+ 1149 05b2 E0000000 		.4byte	0xe0
+ 1150 05b6 18       		.byte	0x18
+ 1151 05b7 0E       		.uleb128 0xe
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 27
+
+
+ 1152 05b8 A1050000 		.4byte	.LASF121
+ 1153 05bc 07       		.byte	0x7
+ 1154 05bd 8502     		.2byte	0x285
+ 1155 05bf 43050000 		.4byte	0x543
+ 1156 05c3 1C       		.byte	0x1c
+ 1157 05c4 0E       		.uleb128 0xe
+ 1158 05c5 D40B0000 		.4byte	.LASF122
+ 1159 05c9 07       		.byte	0x7
+ 1160 05ca 8802     		.2byte	0x288
+ 1161 05cc CE000000 		.4byte	0xce
+ 1162 05d0 20       		.byte	0x20
+ 1163 05d1 00       		.byte	0
+ 1164 05d2 08       		.uleb128 0x8
+ 1165 05d3 750A0000 		.4byte	.LASF123
+ 1166 05d7 07       		.byte	0x7
+ 1167 05d8 8B02     		.2byte	0x28b
+ 1168 05da 4F050000 		.4byte	0x54f
+ 1169 05de 0F       		.uleb128 0xf
+ 1170 05df 360A0000 		.4byte	.LASF125
+ 1171 05e3 4C       		.byte	0x4c
+ 1172 05e4 08       		.byte	0x8
+ 1173 05e5 2F       		.byte	0x2f
+ 1174 05e6 CF060000 		.4byte	0x6cf
+ 1175 05ea 07       		.uleb128 0x7
+ 1176 05eb 260B0000 		.4byte	.LASF126
+ 1177 05ef 08       		.byte	0x8
+ 1178 05f0 31       		.byte	0x31
+ 1179 05f1 CE000000 		.4byte	0xce
+ 1180 05f5 00       		.byte	0
+ 1181 05f6 07       		.uleb128 0x7
+ 1182 05f7 7D010000 		.4byte	.LASF127
+ 1183 05fb 08       		.byte	0x8
+ 1184 05fc 33       		.byte	0x33
+ 1185 05fd CE000000 		.4byte	0xce
+ 1186 0601 04       		.byte	0x4
+ 1187 0602 07       		.uleb128 0x7
+ 1188 0603 18000000 		.4byte	.LASF128
+ 1189 0607 08       		.byte	0x8
+ 1190 0608 34       		.byte	0x34
+ 1191 0609 CE000000 		.4byte	0xce
+ 1192 060d 08       		.byte	0x8
+ 1193 060e 07       		.uleb128 0x7
+ 1194 060f 0B010000 		.4byte	.LASF129
+ 1195 0613 08       		.byte	0x8
+ 1196 0614 35       		.byte	0x35
+ 1197 0615 CE000000 		.4byte	0xce
+ 1198 0619 0C       		.byte	0xc
+ 1199 061a 07       		.uleb128 0x7
+ 1200 061b 440B0000 		.4byte	.LASF130
+ 1201 061f 08       		.byte	0x8
+ 1202 0620 37       		.byte	0x37
+ 1203 0621 CE000000 		.4byte	0xce
+ 1204 0625 10       		.byte	0x10
+ 1205 0626 07       		.uleb128 0x7
+ 1206 0627 990A0000 		.4byte	.LASF131
+ 1207 062b 08       		.byte	0x8
+ 1208 062c 38       		.byte	0x38
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 28
+
+
+ 1209 062d CE000000 		.4byte	0xce
+ 1210 0631 14       		.byte	0x14
+ 1211 0632 07       		.uleb128 0x7
+ 1212 0633 A20A0000 		.4byte	.LASF132
+ 1213 0637 08       		.byte	0x8
+ 1214 0638 39       		.byte	0x39
+ 1215 0639 CE000000 		.4byte	0xce
+ 1216 063d 18       		.byte	0x18
+ 1217 063e 07       		.uleb128 0x7
+ 1218 063f 68090000 		.4byte	.LASF133
+ 1219 0643 08       		.byte	0x8
+ 1220 0644 3A       		.byte	0x3a
+ 1221 0645 2B050000 		.4byte	0x52b
+ 1222 0649 1C       		.byte	0x1c
+ 1223 064a 07       		.uleb128 0x7
+ 1224 064b 550B0000 		.4byte	.LASF134
+ 1225 064f 08       		.byte	0x8
+ 1226 0650 3C       		.byte	0x3c
+ 1227 0651 CE000000 		.4byte	0xce
+ 1228 0655 20       		.byte	0x20
+ 1229 0656 07       		.uleb128 0x7
+ 1230 0657 A9030000 		.4byte	.LASF135
+ 1231 065b 08       		.byte	0x8
+ 1232 065c 3D       		.byte	0x3d
+ 1233 065d CE000000 		.4byte	0xce
+ 1234 0661 24       		.byte	0x24
+ 1235 0662 07       		.uleb128 0x7
+ 1236 0663 46050000 		.4byte	.LASF136
+ 1237 0667 08       		.byte	0x8
+ 1238 0668 3F       		.byte	0x3f
+ 1239 0669 CE000000 		.4byte	0xce
+ 1240 066d 28       		.byte	0x28
+ 1241 066e 07       		.uleb128 0x7
+ 1242 066f 00000000 		.4byte	.LASF137
+ 1243 0673 08       		.byte	0x8
+ 1244 0674 40       		.byte	0x40
+ 1245 0675 CE000000 		.4byte	0xce
+ 1246 0679 2C       		.byte	0x2c
+ 1247 067a 07       		.uleb128 0x7
+ 1248 067b 660B0000 		.4byte	.LASF138
+ 1249 067f 08       		.byte	0x8
+ 1250 0680 42       		.byte	0x42
+ 1251 0681 CE000000 		.4byte	0xce
+ 1252 0685 30       		.byte	0x30
+ 1253 0686 07       		.uleb128 0x7
+ 1254 0687 07090000 		.4byte	.LASF139
+ 1255 068b 08       		.byte	0x8
+ 1256 068c 43       		.byte	0x43
+ 1257 068d CE000000 		.4byte	0xce
+ 1258 0691 34       		.byte	0x34
+ 1259 0692 07       		.uleb128 0x7
+ 1260 0693 AA0D0000 		.4byte	.LASF140
+ 1261 0697 08       		.byte	0x8
+ 1262 0698 45       		.byte	0x45
+ 1263 0699 CE000000 		.4byte	0xce
+ 1264 069d 38       		.byte	0x38
+ 1265 069e 07       		.uleb128 0x7
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 29
+
+
+ 1266 069f 27010000 		.4byte	.LASF141
+ 1267 06a3 08       		.byte	0x8
+ 1268 06a4 46       		.byte	0x46
+ 1269 06a5 CE000000 		.4byte	0xce
+ 1270 06a9 3C       		.byte	0x3c
+ 1271 06aa 07       		.uleb128 0x7
+ 1272 06ab 930B0000 		.4byte	.LASF142
+ 1273 06af 08       		.byte	0x8
+ 1274 06b0 48       		.byte	0x48
+ 1275 06b1 CE000000 		.4byte	0xce
+ 1276 06b5 40       		.byte	0x40
+ 1277 06b6 07       		.uleb128 0x7
+ 1278 06b7 52060000 		.4byte	.LASF143
+ 1279 06bb 08       		.byte	0x8
+ 1280 06bc 49       		.byte	0x49
+ 1281 06bd CE000000 		.4byte	0xce
+ 1282 06c1 44       		.byte	0x44
+ 1283 06c2 07       		.uleb128 0x7
+ 1284 06c3 AB0A0000 		.4byte	.LASF144
+ 1285 06c7 08       		.byte	0x8
+ 1286 06c8 4B       		.byte	0x4b
+ 1287 06c9 CE000000 		.4byte	0xce
+ 1288 06cd 48       		.byte	0x48
+ 1289 06ce 00       		.byte	0
+ 1290 06cf 03       		.uleb128 0x3
+ 1291 06d0 2D020000 		.4byte	.LASF145
+ 1292 06d4 08       		.byte	0x8
+ 1293 06d5 4C       		.byte	0x4c
+ 1294 06d6 DE050000 		.4byte	0x5de
+ 1295 06da 0A       		.uleb128 0xa
+ 1296 06db 04       		.byte	0x4
+ 1297 06dc E0060000 		.4byte	0x6e0
+ 1298 06e0 10       		.uleb128 0x10
+ 1299 06e1 3E000000 		.4byte	0x3e
+ 1300 06e5 0A       		.uleb128 0xa
+ 1301 06e6 04       		.byte	0x4
+ 1302 06e7 EB060000 		.4byte	0x6eb
+ 1303 06eb 11       		.uleb128 0x11
+ 1304 06ec 0A       		.uleb128 0xa
+ 1305 06ed 04       		.byte	0x4
+ 1306 06ee F2060000 		.4byte	0x6f2
+ 1307 06f2 10       		.uleb128 0x10
+ 1308 06f3 08050000 		.4byte	0x508
+ 1309 06f7 06       		.uleb128 0x6
+ 1310 06f8 04       		.byte	0x4
+ 1311 06f9 09       		.byte	0x9
+ 1312 06fa B6       		.byte	0xb6
+ 1313 06fb 16070000 		.4byte	0x716
+ 1314 06ff 12       		.uleb128 0x12
+ 1315 0700 633000   		.ascii	"c0\000"
+ 1316 0703 09       		.byte	0x9
+ 1317 0704 B7       		.byte	0xb7
+ 1318 0705 25000000 		.4byte	0x25
+ 1319 0709 00       		.byte	0
+ 1320 070a 12       		.uleb128 0x12
+ 1321 070b 633100   		.ascii	"c1\000"
+ 1322 070e 09       		.byte	0x9
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 30
+
+
+ 1323 070f B8       		.byte	0xb8
+ 1324 0710 25000000 		.4byte	0x25
+ 1325 0714 02       		.byte	0x2
+ 1326 0715 00       		.byte	0
+ 1327 0716 03       		.uleb128 0x3
+ 1328 0717 09040000 		.4byte	.LASF146
+ 1329 071b 09       		.byte	0x9
+ 1330 071c B9       		.byte	0xb9
+ 1331 071d F7060000 		.4byte	0x6f7
+ 1332 0721 06       		.uleb128 0x6
+ 1333 0722 08       		.byte	0x8
+ 1334 0723 09       		.byte	0x9
+ 1335 0724 BB       		.byte	0xbb
+ 1336 0725 4E070000 		.4byte	0x74e
+ 1337 0729 07       		.uleb128 0x7
+ 1338 072a 20000000 		.4byte	.LASF147
+ 1339 072e 09       		.byte	0x9
+ 1340 072f BC       		.byte	0xbc
+ 1341 0730 5B000000 		.4byte	0x5b
+ 1342 0734 00       		.byte	0
+ 1343 0735 07       		.uleb128 0x7
+ 1344 0736 7C020000 		.4byte	.LASF148
+ 1345 073a 09       		.byte	0x9
+ 1346 073b BD       		.byte	0xbd
+ 1347 073c 5B000000 		.4byte	0x5b
+ 1348 0740 02       		.byte	0x2
+ 1349 0741 07       		.uleb128 0x7
+ 1350 0742 CE0B0000 		.4byte	.LASF149
+ 1351 0746 09       		.byte	0x9
+ 1352 0747 BE       		.byte	0xbe
+ 1353 0748 4E070000 		.4byte	0x74e
+ 1354 074c 04       		.byte	0x4
+ 1355 074d 00       		.byte	0
+ 1356 074e 0A       		.uleb128 0xa
+ 1357 074f 04       		.byte	0x4
+ 1358 0750 54070000 		.4byte	0x754
+ 1359 0754 10       		.uleb128 0x10
+ 1360 0755 16070000 		.4byte	0x716
+ 1361 0759 03       		.uleb128 0x3
+ 1362 075a DC0B0000 		.4byte	.LASF150
+ 1363 075e 09       		.byte	0x9
+ 1364 075f BF       		.byte	0xbf
+ 1365 0760 21070000 		.4byte	0x721
+ 1366 0764 06       		.uleb128 0x6
+ 1367 0765 08       		.byte	0x8
+ 1368 0766 09       		.byte	0x9
+ 1369 0767 C1       		.byte	0xc1
+ 1370 0768 9D070000 		.4byte	0x79d
+ 1371 076c 07       		.uleb128 0x7
+ 1372 076d 330C0000 		.4byte	.LASF151
+ 1373 0771 09       		.byte	0x9
+ 1374 0772 C2       		.byte	0xc2
+ 1375 0773 3E000000 		.4byte	0x3e
+ 1376 0777 00       		.byte	0
+ 1377 0778 07       		.uleb128 0x7
+ 1378 0779 2C090000 		.4byte	.LASF152
+ 1379 077d 09       		.byte	0x9
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 31
+
+
+ 1380 077e C3       		.byte	0xc3
+ 1381 077f 3E000000 		.4byte	0x3e
+ 1382 0783 01       		.byte	0x1
+ 1383 0784 07       		.uleb128 0x7
+ 1384 0785 11070000 		.4byte	.LASF153
+ 1385 0789 09       		.byte	0x9
+ 1386 078a C4       		.byte	0xc4
+ 1387 078b 3E000000 		.4byte	0x3e
+ 1388 078f 02       		.byte	0x2
+ 1389 0790 07       		.uleb128 0x7
+ 1390 0791 1C040000 		.4byte	.LASF154
+ 1391 0795 09       		.byte	0x9
+ 1392 0796 C5       		.byte	0xc5
+ 1393 0797 DA060000 		.4byte	0x6da
+ 1394 079b 04       		.byte	0x4
+ 1395 079c 00       		.byte	0
+ 1396 079d 03       		.uleb128 0x3
+ 1397 079e A9090000 		.4byte	.LASF155
+ 1398 07a2 09       		.byte	0x9
+ 1399 07a3 C6       		.byte	0xc6
+ 1400 07a4 64070000 		.4byte	0x764
+ 1401 07a8 06       		.uleb128 0x6
+ 1402 07a9 0C       		.byte	0xc
+ 1403 07aa 09       		.byte	0x9
+ 1404 07ab C8       		.byte	0xc8
+ 1405 07ac F9070000 		.4byte	0x7f9
+ 1406 07b0 07       		.uleb128 0x7
+ 1407 07b1 330C0000 		.4byte	.LASF151
+ 1408 07b5 09       		.byte	0x9
+ 1409 07b6 C9       		.byte	0xc9
+ 1410 07b7 3E000000 		.4byte	0x3e
+ 1411 07bb 00       		.byte	0
+ 1412 07bc 07       		.uleb128 0x7
+ 1413 07bd F6060000 		.4byte	.LASF156
+ 1414 07c1 09       		.byte	0x9
+ 1415 07c2 CA       		.byte	0xca
+ 1416 07c3 3E000000 		.4byte	0x3e
+ 1417 07c7 01       		.byte	0x1
+ 1418 07c8 07       		.uleb128 0x7
+ 1419 07c9 77020000 		.4byte	.LASF157
+ 1420 07cd 09       		.byte	0x9
+ 1421 07ce CB       		.byte	0xcb
+ 1422 07cf 2C000000 		.4byte	0x2c
+ 1423 07d3 02       		.byte	0x2
+ 1424 07d4 07       		.uleb128 0x7
+ 1425 07d5 AB000000 		.4byte	.LASF158
+ 1426 07d9 09       		.byte	0x9
+ 1427 07da CC       		.byte	0xcc
+ 1428 07db 2C000000 		.4byte	0x2c
+ 1429 07df 03       		.byte	0x3
+ 1430 07e0 07       		.uleb128 0x7
+ 1431 07e1 2C090000 		.4byte	.LASF152
+ 1432 07e5 09       		.byte	0x9
+ 1433 07e6 CD       		.byte	0xcd
+ 1434 07e7 3E000000 		.4byte	0x3e
+ 1435 07eb 04       		.byte	0x4
+ 1436 07ec 07       		.uleb128 0x7
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 32
+
+
+ 1437 07ed 1C040000 		.4byte	.LASF154
+ 1438 07f1 09       		.byte	0x9
+ 1439 07f2 CE       		.byte	0xce
+ 1440 07f3 DA060000 		.4byte	0x6da
+ 1441 07f7 08       		.byte	0x8
+ 1442 07f8 00       		.byte	0
+ 1443 07f9 03       		.uleb128 0x3
+ 1444 07fa 13030000 		.4byte	.LASF159
+ 1445 07fe 09       		.byte	0x9
+ 1446 07ff CF       		.byte	0xcf
+ 1447 0800 A8070000 		.4byte	0x7a8
+ 1448 0804 0F       		.uleb128 0xf
+ 1449 0805 05030000 		.4byte	.LASF160
+ 1450 0809 0C       		.byte	0xc
+ 1451 080a 09       		.byte	0x9
+ 1452 080b D1       		.byte	0xd1
+ 1453 080c 41080000 		.4byte	0x841
+ 1454 0810 07       		.uleb128 0x7
+ 1455 0811 EA080000 		.4byte	.LASF161
+ 1456 0815 09       		.byte	0x9
+ 1457 0816 D2       		.byte	0xd2
+ 1458 0817 5B000000 		.4byte	0x5b
+ 1459 081b 00       		.byte	0
+ 1460 081c 07       		.uleb128 0x7
+ 1461 081d AE0C0000 		.4byte	.LASF162
+ 1462 0821 09       		.byte	0x9
+ 1463 0822 D3       		.byte	0xd3
+ 1464 0823 5B000000 		.4byte	0x5b
+ 1465 0827 02       		.byte	0x2
+ 1466 0828 07       		.uleb128 0x7
+ 1467 0829 2B0A0000 		.4byte	.LASF163
+ 1468 082d 09       		.byte	0x9
+ 1469 082e D4       		.byte	0xd4
+ 1470 082f 41080000 		.4byte	0x841
+ 1471 0833 04       		.byte	0x4
+ 1472 0834 07       		.uleb128 0x7
+ 1473 0835 8C010000 		.4byte	.LASF164
+ 1474 0839 09       		.byte	0x9
+ 1475 083a D5       		.byte	0xd5
+ 1476 083b 4C080000 		.4byte	0x84c
+ 1477 083f 08       		.byte	0x8
+ 1478 0840 00       		.byte	0
+ 1479 0841 0A       		.uleb128 0xa
+ 1480 0842 04       		.byte	0x4
+ 1481 0843 47080000 		.4byte	0x847
+ 1482 0847 10       		.uleb128 0x10
+ 1483 0848 9D070000 		.4byte	0x79d
+ 1484 084c 0A       		.uleb128 0xa
+ 1485 084d 04       		.byte	0x4
+ 1486 084e 52080000 		.4byte	0x852
+ 1487 0852 10       		.uleb128 0x10
+ 1488 0853 04080000 		.4byte	0x804
+ 1489 0857 03       		.uleb128 0x3
+ 1490 0858 05030000 		.4byte	.LASF160
+ 1491 085c 09       		.byte	0x9
+ 1492 085d D6       		.byte	0xd6
+ 1493 085e 04080000 		.4byte	0x804
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 33
+
+
+ 1494 0862 0F       		.uleb128 0xf
+ 1495 0863 3F010000 		.4byte	.LASF165
+ 1496 0867 0C       		.byte	0xc
+ 1497 0868 09       		.byte	0x9
+ 1498 0869 D8       		.byte	0xd8
+ 1499 086a 9F080000 		.4byte	0x89f
+ 1500 086e 07       		.uleb128 0x7
+ 1501 086f EA080000 		.4byte	.LASF161
+ 1502 0873 09       		.byte	0x9
+ 1503 0874 D9       		.byte	0xd9
+ 1504 0875 5B000000 		.4byte	0x5b
+ 1505 0879 00       		.byte	0
+ 1506 087a 07       		.uleb128 0x7
+ 1507 087b AE0C0000 		.4byte	.LASF162
+ 1508 087f 09       		.byte	0x9
+ 1509 0880 DA       		.byte	0xda
+ 1510 0881 5B000000 		.4byte	0x5b
+ 1511 0885 02       		.byte	0x2
+ 1512 0886 07       		.uleb128 0x7
+ 1513 0887 2B0A0000 		.4byte	.LASF163
+ 1514 088b 09       		.byte	0x9
+ 1515 088c DB       		.byte	0xdb
+ 1516 088d 9F080000 		.4byte	0x89f
+ 1517 0891 04       		.byte	0x4
+ 1518 0892 07       		.uleb128 0x7
+ 1519 0893 8C010000 		.4byte	.LASF164
+ 1520 0897 09       		.byte	0x9
+ 1521 0898 DC       		.byte	0xdc
+ 1522 0899 AA080000 		.4byte	0x8aa
+ 1523 089d 08       		.byte	0x8
+ 1524 089e 00       		.byte	0
+ 1525 089f 0A       		.uleb128 0xa
+ 1526 08a0 04       		.byte	0x4
+ 1527 08a1 A5080000 		.4byte	0x8a5
+ 1528 08a5 10       		.uleb128 0x10
+ 1529 08a6 F9070000 		.4byte	0x7f9
+ 1530 08aa 0A       		.uleb128 0xa
+ 1531 08ab 04       		.byte	0x4
+ 1532 08ac B0080000 		.4byte	0x8b0
+ 1533 08b0 10       		.uleb128 0x10
+ 1534 08b1 62080000 		.4byte	0x862
+ 1535 08b5 03       		.uleb128 0x3
+ 1536 08b6 3F010000 		.4byte	.LASF165
+ 1537 08ba 09       		.byte	0x9
+ 1538 08bb DD       		.byte	0xdd
+ 1539 08bc 62080000 		.4byte	0x862
+ 1540 08c0 06       		.uleb128 0x6
+ 1541 08c1 14       		.byte	0x14
+ 1542 08c2 09       		.byte	0x9
+ 1543 08c3 DF       		.byte	0xdf
+ 1544 08c4 29090000 		.4byte	0x929
+ 1545 08c8 07       		.uleb128 0x7
+ 1546 08c9 1C040000 		.4byte	.LASF154
+ 1547 08cd 09       		.byte	0x9
+ 1548 08ce E0       		.byte	0xe0
+ 1549 08cf DA060000 		.4byte	0x6da
+ 1550 08d3 00       		.byte	0
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 34
+
+
+ 1551 08d4 07       		.uleb128 0x7
+ 1552 08d5 C9080000 		.4byte	.LASF166
+ 1553 08d9 09       		.byte	0x9
+ 1554 08da E1       		.byte	0xe1
+ 1555 08db DA060000 		.4byte	0x6da
+ 1556 08df 04       		.byte	0x4
+ 1557 08e0 07       		.uleb128 0x7
+ 1558 08e1 5E0C0000 		.4byte	.LASF167
+ 1559 08e5 09       		.byte	0x9
+ 1560 08e6 E2       		.byte	0xe2
+ 1561 08e7 29090000 		.4byte	0x929
+ 1562 08eb 08       		.byte	0x8
+ 1563 08ec 07       		.uleb128 0x7
+ 1564 08ed 20000000 		.4byte	.LASF147
+ 1565 08f1 09       		.byte	0x9
+ 1566 08f2 E3       		.byte	0xe3
+ 1567 08f3 5B000000 		.4byte	0x5b
+ 1568 08f7 0C       		.byte	0xc
+ 1569 08f8 07       		.uleb128 0x7
+ 1570 08f9 7C020000 		.4byte	.LASF148
+ 1571 08fd 09       		.byte	0x9
+ 1572 08fe E4       		.byte	0xe4
+ 1573 08ff 5B000000 		.4byte	0x5b
+ 1574 0903 0E       		.byte	0xe
+ 1575 0904 07       		.uleb128 0x7
+ 1576 0905 330C0000 		.4byte	.LASF151
+ 1577 0909 09       		.byte	0x9
+ 1578 090a E5       		.byte	0xe5
+ 1579 090b 3E000000 		.4byte	0x3e
+ 1580 090f 10       		.byte	0x10
+ 1581 0910 07       		.uleb128 0x7
+ 1582 0911 2C090000 		.4byte	.LASF152
+ 1583 0915 09       		.byte	0x9
+ 1584 0916 E6       		.byte	0xe6
+ 1585 0917 3E000000 		.4byte	0x3e
+ 1586 091b 11       		.byte	0x11
+ 1587 091c 07       		.uleb128 0x7
+ 1588 091d 11070000 		.4byte	.LASF153
+ 1589 0921 09       		.byte	0x9
+ 1590 0922 E7       		.byte	0xe7
+ 1591 0923 3E000000 		.4byte	0x3e
+ 1592 0927 12       		.byte	0x12
+ 1593 0928 00       		.byte	0
+ 1594 0929 0A       		.uleb128 0xa
+ 1595 092a 04       		.byte	0x4
+ 1596 092b 2F090000 		.4byte	0x92f
+ 1597 092f 10       		.uleb128 0x10
+ 1598 0930 59070000 		.4byte	0x759
+ 1599 0934 03       		.uleb128 0x3
+ 1600 0935 A00C0000 		.4byte	.LASF168
+ 1601 0939 09       		.byte	0x9
+ 1602 093a E8       		.byte	0xe8
+ 1603 093b C0080000 		.4byte	0x8c0
+ 1604 093f 06       		.uleb128 0x6
+ 1605 0940 06       		.byte	0x6
+ 1606 0941 09       		.byte	0x9
+ 1607 0942 F1       		.byte	0xf1
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 35
+
+
+ 1608 0943 78090000 		.4byte	0x978
+ 1609 0947 07       		.uleb128 0x7
+ 1610 0948 040B0000 		.4byte	.LASF169
+ 1611 094c 09       		.byte	0x9
+ 1612 094d F2       		.byte	0xf2
+ 1613 094e 5B000000 		.4byte	0x5b
+ 1614 0952 00       		.byte	0
+ 1615 0953 07       		.uleb128 0x7
+ 1616 0954 24020000 		.4byte	.LASF170
+ 1617 0958 09       		.byte	0x9
+ 1618 0959 F3       		.byte	0xf3
+ 1619 095a 3E000000 		.4byte	0x3e
+ 1620 095e 02       		.byte	0x2
+ 1621 095f 07       		.uleb128 0x7
+ 1622 0960 69010000 		.4byte	.LASF171
+ 1623 0964 09       		.byte	0x9
+ 1624 0965 F4       		.byte	0xf4
+ 1625 0966 3E000000 		.4byte	0x3e
+ 1626 096a 03       		.byte	0x3
+ 1627 096b 07       		.uleb128 0x7
+ 1628 096c 10000000 		.4byte	.LASF172
+ 1629 0970 09       		.byte	0x9
+ 1630 0971 F5       		.byte	0xf5
+ 1631 0972 3E000000 		.4byte	0x3e
+ 1632 0976 04       		.byte	0x4
+ 1633 0977 00       		.byte	0
+ 1634 0978 03       		.uleb128 0x3
+ 1635 0979 FA050000 		.4byte	.LASF173
+ 1636 097d 09       		.byte	0x9
+ 1637 097e F6       		.byte	0xf6
+ 1638 097f 3F090000 		.4byte	0x93f
+ 1639 0983 08       		.uleb128 0x8
+ 1640 0984 95070000 		.4byte	.LASF174
+ 1641 0988 09       		.byte	0x9
+ 1642 0989 1301     		.2byte	0x113
+ 1643 098b 8F090000 		.4byte	0x98f
+ 1644 098f 13       		.uleb128 0x13
+ 1645 0990 94000000 		.4byte	0x94
+ 1646 0994 A3090000 		.4byte	0x9a3
+ 1647 0998 0C       		.uleb128 0xc
+ 1648 0999 EC060000 		.4byte	0x6ec
+ 1649 099d 0C       		.uleb128 0xc
+ 1650 099e 94000000 		.4byte	0x94
+ 1651 09a2 00       		.byte	0
+ 1652 09a3 08       		.uleb128 0x8
+ 1653 09a4 F9030000 		.4byte	.LASF175
+ 1654 09a8 09       		.byte	0x9
+ 1655 09a9 1401     		.2byte	0x114
+ 1656 09ab 8F090000 		.4byte	0x98f
+ 1657 09af 08       		.uleb128 0x8
+ 1658 09b0 FA080000 		.4byte	.LASF176
+ 1659 09b4 09       		.byte	0x9
+ 1660 09b5 1501     		.2byte	0x115
+ 1661 09b7 BB090000 		.4byte	0x9bb
+ 1662 09bb 0B       		.uleb128 0xb
+ 1663 09bc CB090000 		.4byte	0x9cb
+ 1664 09c0 0C       		.uleb128 0xc
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 36
+
+
+ 1665 09c1 EC060000 		.4byte	0x6ec
+ 1666 09c5 0C       		.uleb128 0xc
+ 1667 09c6 94000000 		.4byte	0x94
+ 1668 09ca 00       		.byte	0
+ 1669 09cb 14       		.uleb128 0x14
+ 1670 09cc 0C       		.byte	0xc
+ 1671 09cd 09       		.byte	0x9
+ 1672 09ce 1701     		.2byte	0x117
+ 1673 09d0 FC090000 		.4byte	0x9fc
+ 1674 09d4 0E       		.uleb128 0xe
+ 1675 09d5 7A090000 		.4byte	.LASF177
+ 1676 09d9 09       		.byte	0x9
+ 1677 09da 1801     		.2byte	0x118
+ 1678 09dc FC090000 		.4byte	0x9fc
+ 1679 09e0 00       		.byte	0
+ 1680 09e1 0E       		.uleb128 0xe
+ 1681 09e2 B80B0000 		.4byte	.LASF178
+ 1682 09e6 09       		.byte	0x9
+ 1683 09e7 1901     		.2byte	0x119
+ 1684 09e9 020A0000 		.4byte	0xa02
+ 1685 09ed 04       		.byte	0x4
+ 1686 09ee 0E       		.uleb128 0xe
+ 1687 09ef 8E0A0000 		.4byte	.LASF179
+ 1688 09f3 09       		.byte	0x9
+ 1689 09f4 1A01     		.2byte	0x11a
+ 1690 09f6 080A0000 		.4byte	0xa08
+ 1691 09fa 08       		.byte	0x8
+ 1692 09fb 00       		.byte	0
+ 1693 09fc 0A       		.uleb128 0xa
+ 1694 09fd 04       		.byte	0x4
+ 1695 09fe 83090000 		.4byte	0x983
+ 1696 0a02 0A       		.uleb128 0xa
+ 1697 0a03 04       		.byte	0x4
+ 1698 0a04 A3090000 		.4byte	0x9a3
+ 1699 0a08 0A       		.uleb128 0xa
+ 1700 0a09 04       		.byte	0x4
+ 1701 0a0a AF090000 		.4byte	0x9af
+ 1702 0a0e 08       		.uleb128 0x8
+ 1703 0a0f CF0A0000 		.4byte	.LASF180
+ 1704 0a13 09       		.byte	0x9
+ 1705 0a14 1B01     		.2byte	0x11b
+ 1706 0a16 CB090000 		.4byte	0x9cb
+ 1707 0a1a 08       		.uleb128 0x8
+ 1708 0a1b DC030000 		.4byte	.LASF181
+ 1709 0a1f 09       		.byte	0x9
+ 1710 0a20 2401     		.2byte	0x124
+ 1711 0a22 260A0000 		.4byte	0xa26
+ 1712 0a26 0D       		.uleb128 0xd
+ 1713 0a27 DC030000 		.4byte	.LASF181
+ 1714 0a2b 24       		.byte	0x24
+ 1715 0a2c 09       		.byte	0x9
+ 1716 0a2d B101     		.2byte	0x1b1
+ 1717 0a2f E80A0000 		.4byte	0xae8
+ 1718 0a33 0E       		.uleb128 0xe
+ 1719 0a34 78060000 		.4byte	.LASF182
+ 1720 0a38 09       		.byte	0x9
+ 1721 0a39 B201     		.2byte	0x1b2
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 37
+
+
+ 1722 0a3b F30B0000 		.4byte	0xbf3
+ 1723 0a3f 00       		.byte	0
+ 1724 0a40 0E       		.uleb128 0xe
+ 1725 0a41 CF050000 		.4byte	.LASF183
+ 1726 0a45 09       		.byte	0x9
+ 1727 0a46 B301     		.2byte	0x1b3
+ 1728 0a48 F90B0000 		.4byte	0xbf9
+ 1729 0a4c 04       		.byte	0x4
+ 1730 0a4d 0E       		.uleb128 0xe
+ 1731 0a4e CF020000 		.4byte	.LASF184
+ 1732 0a52 09       		.byte	0x9
+ 1733 0a53 B401     		.2byte	0x1b4
+ 1734 0a55 FF0B0000 		.4byte	0xbff
+ 1735 0a59 08       		.byte	0x8
+ 1736 0a5a 0E       		.uleb128 0xe
+ 1737 0a5b 880D0000 		.4byte	.LASF185
+ 1738 0a5f 09       		.byte	0x9
+ 1739 0a60 B501     		.2byte	0x1b5
+ 1740 0a62 050C0000 		.4byte	0xc05
+ 1741 0a66 0C       		.byte	0xc
+ 1742 0a67 0E       		.uleb128 0xe
+ 1743 0a68 CB010000 		.4byte	.LASF186
+ 1744 0a6c 09       		.byte	0x9
+ 1745 0a6d B601     		.2byte	0x1b6
+ 1746 0a6f 0B0C0000 		.4byte	0xc0b
+ 1747 0a73 10       		.byte	0x10
+ 1748 0a74 0E       		.uleb128 0xe
+ 1749 0a75 3A0B0000 		.4byte	.LASF187
+ 1750 0a79 09       		.byte	0x9
+ 1751 0a7a B701     		.2byte	0x1b7
+ 1752 0a7c 110C0000 		.4byte	0xc11
+ 1753 0a80 14       		.byte	0x14
+ 1754 0a81 0E       		.uleb128 0xe
+ 1755 0a82 F6060000 		.4byte	.LASF156
+ 1756 0a86 09       		.byte	0x9
+ 1757 0a87 B801     		.2byte	0x1b8
+ 1758 0a89 3E000000 		.4byte	0x3e
+ 1759 0a8d 18       		.byte	0x18
+ 1760 0a8e 0E       		.uleb128 0xe
+ 1761 0a8f EB0A0000 		.4byte	.LASF188
+ 1762 0a93 09       		.byte	0x9
+ 1763 0a94 B901     		.2byte	0x1b9
+ 1764 0a96 3E000000 		.4byte	0x3e
+ 1765 0a9a 19       		.byte	0x19
+ 1766 0a9b 0E       		.uleb128 0xe
+ 1767 0a9c 8E0B0000 		.4byte	.LASF189
+ 1768 0aa0 09       		.byte	0x9
+ 1769 0aa1 BA01     		.2byte	0x1ba
+ 1770 0aa3 3E000000 		.4byte	0x3e
+ 1771 0aa7 1A       		.byte	0x1a
+ 1772 0aa8 0E       		.uleb128 0xe
+ 1773 0aa9 EE090000 		.4byte	.LASF190
+ 1774 0aad 09       		.byte	0x9
+ 1775 0aae BB01     		.2byte	0x1bb
+ 1776 0ab0 3E000000 		.4byte	0x3e
+ 1777 0ab4 1B       		.byte	0x1b
+ 1778 0ab5 15       		.uleb128 0x15
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 38
+
+
+ 1779 0ab6 7000     		.ascii	"p\000"
+ 1780 0ab8 09       		.byte	0x9
+ 1781 0ab9 C101     		.2byte	0x1c1
+ 1782 0abb 980B0000 		.4byte	0xb98
+ 1783 0abf 1C       		.byte	0x1c
+ 1784 0ac0 0E       		.uleb128 0xe
+ 1785 0ac1 24020000 		.4byte	.LASF170
+ 1786 0ac5 09       		.byte	0x9
+ 1787 0ac6 C201     		.2byte	0x1c2
+ 1788 0ac8 3E000000 		.4byte	0x3e
+ 1789 0acc 20       		.byte	0x20
+ 1790 0acd 0E       		.uleb128 0xe
+ 1791 0ace 69010000 		.4byte	.LASF171
+ 1792 0ad2 09       		.byte	0x9
+ 1793 0ad3 C301     		.2byte	0x1c3
+ 1794 0ad5 3E000000 		.4byte	0x3e
+ 1795 0ad9 21       		.byte	0x21
+ 1796 0ada 0E       		.uleb128 0xe
+ 1797 0adb 10000000 		.4byte	.LASF172
+ 1798 0adf 09       		.byte	0x9
+ 1799 0ae0 C401     		.2byte	0x1c4
+ 1800 0ae2 3E000000 		.4byte	0x3e
+ 1801 0ae6 22       		.byte	0x22
+ 1802 0ae7 00       		.byte	0
+ 1803 0ae8 08       		.uleb128 0x8
+ 1804 0ae9 17060000 		.4byte	.LASF191
+ 1805 0aed 09       		.byte	0x9
+ 1806 0aee 2601     		.2byte	0x126
+ 1807 0af0 F40A0000 		.4byte	0xaf4
+ 1808 0af4 0B       		.uleb128 0xb
+ 1809 0af5 FF0A0000 		.4byte	0xaff
+ 1810 0af9 0C       		.uleb128 0xc
+ 1811 0afa 5B000000 		.4byte	0x5b
+ 1812 0afe 00       		.byte	0
+ 1813 0aff 08       		.uleb128 0x8
+ 1814 0b00 5F050000 		.4byte	.LASF192
+ 1815 0b04 09       		.byte	0x9
+ 1816 0b05 2701     		.2byte	0x127
+ 1817 0b07 0B0B0000 		.4byte	0xb0b
+ 1818 0b0b 13       		.uleb128 0x13
+ 1819 0b0c 94000000 		.4byte	0x94
+ 1820 0b10 1F0B0000 		.4byte	0xb1f
+ 1821 0b14 0C       		.uleb128 0xc
+ 1822 0b15 5B000000 		.4byte	0x5b
+ 1823 0b19 0C       		.uleb128 0xc
+ 1824 0b1a 1F0B0000 		.4byte	0xb1f
+ 1825 0b1e 00       		.byte	0
+ 1826 0b1f 0A       		.uleb128 0xa
+ 1827 0b20 04       		.byte	0x4
+ 1828 0b21 94000000 		.4byte	0x94
+ 1829 0b25 08       		.uleb128 0x8
+ 1830 0b26 C6060000 		.4byte	.LASF193
+ 1831 0b2a 09       		.byte	0x9
+ 1832 0b2b 2801     		.2byte	0x128
+ 1833 0b2d 310B0000 		.4byte	0xb31
+ 1834 0b31 0B       		.uleb128 0xb
+ 1835 0b32 410B0000 		.4byte	0xb41
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 39
+
+
+ 1836 0b36 0C       		.uleb128 0xc
+ 1837 0b37 410B0000 		.4byte	0xb41
+ 1838 0b3b 0C       		.uleb128 0xc
+ 1839 0b3c 4C0B0000 		.4byte	0xb4c
+ 1840 0b40 00       		.byte	0
+ 1841 0b41 0A       		.uleb128 0xa
+ 1842 0b42 04       		.byte	0x4
+ 1843 0b43 470B0000 		.4byte	0xb47
+ 1844 0b47 10       		.uleb128 0x10
+ 1845 0b48 1A0A0000 		.4byte	0xa1a
+ 1846 0b4c 0A       		.uleb128 0xa
+ 1847 0b4d 04       		.byte	0x4
+ 1848 0b4e 78090000 		.4byte	0x978
+ 1849 0b52 08       		.uleb128 0x8
+ 1850 0b53 BE010000 		.4byte	.LASF194
+ 1851 0b57 09       		.byte	0x9
+ 1852 0b58 2901     		.2byte	0x129
+ 1853 0b5a 5E0B0000 		.4byte	0xb5e
+ 1854 0b5e 13       		.uleb128 0x13
+ 1855 0b5f 08050000 		.4byte	0x508
+ 1856 0b63 720B0000 		.4byte	0xb72
+ 1857 0b67 0C       		.uleb128 0xc
+ 1858 0b68 410B0000 		.4byte	0xb41
+ 1859 0b6c 0C       		.uleb128 0xc
+ 1860 0b6d 5B000000 		.4byte	0x5b
+ 1861 0b71 00       		.byte	0
+ 1862 0b72 08       		.uleb128 0x8
+ 1863 0b73 CC030000 		.4byte	.LASF195
+ 1864 0b77 09       		.byte	0x9
+ 1865 0b78 2A01     		.2byte	0x12a
+ 1866 0b7a 7E0B0000 		.4byte	0xb7e
+ 1867 0b7e 13       		.uleb128 0x13
+ 1868 0b7f 94000000 		.4byte	0x94
+ 1869 0b83 920B0000 		.4byte	0xb92
+ 1870 0b87 0C       		.uleb128 0xc
+ 1871 0b88 5B000000 		.4byte	0x5b
+ 1872 0b8c 0C       		.uleb128 0xc
+ 1873 0b8d 920B0000 		.4byte	0xb92
+ 1874 0b91 00       		.byte	0
+ 1875 0b92 0A       		.uleb128 0xa
+ 1876 0b93 04       		.byte	0x4
+ 1877 0b94 F9070000 		.4byte	0x7f9
+ 1878 0b98 16       		.uleb128 0x16
+ 1879 0b99 04       		.byte	0x4
+ 1880 0b9a 09       		.byte	0x9
+ 1881 0b9b BC01     		.2byte	0x1bc
+ 1882 0b9d D20B0000 		.4byte	0xbd2
+ 1883 0ba1 17       		.uleb128 0x17
+ 1884 0ba2 F0080000 		.4byte	.LASF196
+ 1885 0ba6 09       		.byte	0x9
+ 1886 0ba7 BD01     		.2byte	0x1bd
+ 1887 0ba9 E5060000 		.4byte	0x6e5
+ 1888 0bad 17       		.uleb128 0x17
+ 1889 0bae A40D0000 		.4byte	.LASF197
+ 1890 0bb2 09       		.byte	0x9
+ 1891 0bb3 BE01     		.2byte	0x1be
+ 1892 0bb5 D20B0000 		.4byte	0xbd2
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 40
+
+
+ 1893 0bb9 17       		.uleb128 0x17
+ 1894 0bba A3030000 		.4byte	.LASF198
+ 1895 0bbe 09       		.byte	0x9
+ 1896 0bbf BF01     		.2byte	0x1bf
+ 1897 0bc1 DD0B0000 		.4byte	0xbdd
+ 1898 0bc5 17       		.uleb128 0x17
+ 1899 0bc6 A7070000 		.4byte	.LASF199
+ 1900 0bca 09       		.byte	0x9
+ 1901 0bcb C001     		.2byte	0x1c0
+ 1902 0bcd E80B0000 		.4byte	0xbe8
+ 1903 0bd1 00       		.byte	0
+ 1904 0bd2 0A       		.uleb128 0xa
+ 1905 0bd3 04       		.byte	0x4
+ 1906 0bd4 D80B0000 		.4byte	0xbd8
+ 1907 0bd8 10       		.uleb128 0x10
+ 1908 0bd9 34090000 		.4byte	0x934
+ 1909 0bdd 0A       		.uleb128 0xa
+ 1910 0bde 04       		.byte	0x4
+ 1911 0bdf E30B0000 		.4byte	0xbe3
+ 1912 0be3 10       		.uleb128 0x10
+ 1913 0be4 57080000 		.4byte	0x857
+ 1914 0be8 0A       		.uleb128 0xa
+ 1915 0be9 04       		.byte	0x4
+ 1916 0bea EE0B0000 		.4byte	0xbee
+ 1917 0bee 10       		.uleb128 0x10
+ 1918 0bef B5080000 		.4byte	0x8b5
+ 1919 0bf3 0A       		.uleb128 0xa
+ 1920 0bf4 04       		.byte	0x4
+ 1921 0bf5 E80A0000 		.4byte	0xae8
+ 1922 0bf9 0A       		.uleb128 0xa
+ 1923 0bfa 04       		.byte	0x4
+ 1924 0bfb FF0A0000 		.4byte	0xaff
+ 1925 0bff 0A       		.uleb128 0xa
+ 1926 0c00 04       		.byte	0x4
+ 1927 0c01 250B0000 		.4byte	0xb25
+ 1928 0c05 0A       		.uleb128 0xa
+ 1929 0c06 04       		.byte	0x4
+ 1930 0c07 520B0000 		.4byte	0xb52
+ 1931 0c0b 0A       		.uleb128 0xa
+ 1932 0c0c 04       		.byte	0x4
+ 1933 0c0d 720B0000 		.4byte	0xb72
+ 1934 0c11 0A       		.uleb128 0xa
+ 1935 0c12 04       		.byte	0x4
+ 1936 0c13 170C0000 		.4byte	0xc17
+ 1937 0c17 10       		.uleb128 0x10
+ 1938 0c18 0E0A0000 		.4byte	0xa0e
+ 1939 0c1c 03       		.uleb128 0x3
+ 1940 0c1d 75070000 		.4byte	.LASF200
+ 1941 0c21 0A       		.byte	0xa
+ 1942 0c22 35       		.byte	0x35
+ 1943 0c23 3E000000 		.4byte	0x3e
+ 1944 0c27 03       		.uleb128 0x3
+ 1945 0c28 EA050000 		.4byte	.LASF201
+ 1946 0c2c 0B       		.byte	0xb
+ 1947 0c2d 69       		.byte	0x69
+ 1948 0c2e 1C0C0000 		.4byte	0xc1c
+ 1949 0c32 18       		.uleb128 0x18
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 41
+
+
+ 1950 0c33 01       		.byte	0x1
+ 1951 0c34 3E000000 		.4byte	0x3e
+ 1952 0c38 0B       		.byte	0xb
+ 1953 0c39 6E       		.byte	0x6e
+ 1954 0c3a 510C0000 		.4byte	0xc51
+ 1955 0c3e 19       		.uleb128 0x19
+ 1956 0c3f 81040000 		.4byte	.LASF202
+ 1957 0c43 00       		.byte	0
+ 1958 0c44 19       		.uleb128 0x19
+ 1959 0c45 4C040000 		.4byte	.LASF203
+ 1960 0c49 01       		.byte	0x1
+ 1961 0c4a 19       		.uleb128 0x19
+ 1962 0c4b BB050000 		.4byte	.LASF204
+ 1963 0c4f 02       		.byte	0x2
+ 1964 0c50 00       		.byte	0
+ 1965 0c51 03       		.uleb128 0x3
+ 1966 0c52 A2080000 		.4byte	.LASF205
+ 1967 0c56 0B       		.byte	0xb
+ 1968 0c57 72       		.byte	0x72
+ 1969 0c58 320C0000 		.4byte	0xc32
+ 1970 0c5c 1A       		.uleb128 0x1a
+ 1971 0c5d CB070000 		.4byte	.LASF237
+ 1972 0c61 02       		.byte	0x2
+ 1973 0c62 81       		.byte	0x81
+ 1974 0c63 03       		.byte	0x3
+ 1975 0c64 1B       		.uleb128 0x1b
+ 1976 0c65 520A0000 		.4byte	.LASF208
+ 1977 0c69 01       		.byte	0x1
+ 1978 0c6a 53       		.byte	0x53
+ 1979 0c6b 00000000 		.4byte	.LFB557
+ 1980 0c6f 2C000000 		.4byte	.LFE557-.LFB557
+ 1981 0c73 01       		.uleb128 0x1
+ 1982 0c74 9C       		.byte	0x9c
+ 1983 0c75 F30C0000 		.4byte	0xcf3
+ 1984 0c79 1C       		.uleb128 0x1c
+ 1985 0c7a C80C0000 		.4byte	.LASF206
+ 1986 0c7e 01       		.byte	0x1
+ 1987 0c7f 53       		.byte	0x53
+ 1988 0c80 510C0000 		.4byte	0xc51
+ 1989 0c84 00000000 		.4byte	.LLST0
+ 1990 0c88 1C       		.uleb128 0x1c
+ 1991 0c89 FE0B0000 		.4byte	.LASF207
+ 1992 0c8d 01       		.byte	0x1
+ 1993 0c8e 53       		.byte	0x53
+ 1994 0c8f 2B050000 		.4byte	0x52b
+ 1995 0c93 21000000 		.4byte	.LLST1
+ 1996 0c97 1D       		.uleb128 0x1d
+ 1997 0c98 2A000000 		.4byte	.LASF238
+ 1998 0c9c 01       		.byte	0x1
+ 1999 0c9d 55       		.byte	0x55
+ 2000 0c9e F30C0000 		.4byte	0xcf3
+ 2001 0ca2 42000000 		.4byte	.LLST2
+ 2002 0ca6 1E       		.uleb128 0x1e
+ 2003 0ca7 0A000000 		.4byte	.LVL1
+ 2004 0cab BE0F0000 		.4byte	0xfbe
+ 2005 0caf 1F       		.uleb128 0x1f
+ 2006 0cb0 1A000000 		.4byte	.LVL4
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 42
+
+
+ 2007 0cb4 C90F0000 		.4byte	0xfc9
+ 2008 0cb8 D50C0000 		.4byte	0xcd5
+ 2009 0cbc 20       		.uleb128 0x20
+ 2010 0cbd 01       		.uleb128 0x1
+ 2011 0cbe 50       		.byte	0x50
+ 2012 0cbf 02       		.uleb128 0x2
+ 2013 0cc0 74       		.byte	0x74
+ 2014 0cc1 00       		.sleb128 0
+ 2015 0cc2 20       		.uleb128 0x20
+ 2016 0cc3 01       		.uleb128 0x1
+ 2017 0cc4 51       		.byte	0x51
+ 2018 0cc5 02       		.uleb128 0x2
+ 2019 0cc6 75       		.byte	0x75
+ 2020 0cc7 00       		.sleb128 0
+ 2021 0cc8 20       		.uleb128 0x20
+ 2022 0cc9 01       		.uleb128 0x1
+ 2023 0cca 52       		.byte	0x52
+ 2024 0ccb 02       		.uleb128 0x2
+ 2025 0ccc 76       		.byte	0x76
+ 2026 0ccd 00       		.sleb128 0
+ 2027 0cce 20       		.uleb128 0x20
+ 2028 0ccf 01       		.uleb128 0x1
+ 2029 0cd0 53       		.byte	0x53
+ 2030 0cd1 02       		.uleb128 0x2
+ 2031 0cd2 77       		.byte	0x77
+ 2032 0cd3 00       		.sleb128 0
+ 2033 0cd4 00       		.byte	0
+ 2034 0cd5 21       		.uleb128 0x21
+ 2035 0cd6 26000000 		.4byte	.LVL5
+ 2036 0cda D40F0000 		.4byte	0xfd4
+ 2037 0cde 20       		.uleb128 0x20
+ 2038 0cdf 01       		.uleb128 0x1
+ 2039 0ce0 50       		.byte	0x50
+ 2040 0ce1 02       		.uleb128 0x2
+ 2041 0ce2 74       		.byte	0x74
+ 2042 0ce3 00       		.sleb128 0
+ 2043 0ce4 20       		.uleb128 0x20
+ 2044 0ce5 01       		.uleb128 0x1
+ 2045 0ce6 51       		.byte	0x51
+ 2046 0ce7 02       		.uleb128 0x2
+ 2047 0ce8 75       		.byte	0x75
+ 2048 0ce9 00       		.sleb128 0
+ 2049 0cea 20       		.uleb128 0x20
+ 2050 0ceb 01       		.uleb128 0x1
+ 2051 0cec 52       		.byte	0x52
+ 2052 0ced 03       		.uleb128 0x3
+ 2053 0cee 0A       		.byte	0xa
+ 2054 0cef B016     		.2byte	0x16b0
+ 2055 0cf1 00       		.byte	0
+ 2056 0cf2 00       		.byte	0
+ 2057 0cf3 0A       		.uleb128 0xa
+ 2058 0cf4 04       		.byte	0x4
+ 2059 0cf5 270C0000 		.4byte	0xc27
+ 2060 0cf9 1B       		.uleb128 0x1b
+ 2061 0cfa 71010000 		.4byte	.LASF209
+ 2062 0cfe 01       		.byte	0x1
+ 2063 0cff 6F       		.byte	0x6f
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 43
+
+
+ 2064 0d00 00000000 		.4byte	.LFB558
+ 2065 0d04 1E000000 		.4byte	.LFE558-.LFB558
+ 2066 0d08 01       		.uleb128 0x1
+ 2067 0d09 9C       		.byte	0x9c
+ 2068 0d0a 560D0000 		.4byte	0xd56
+ 2069 0d0e 1F       		.uleb128 0x1f
+ 2070 0d0f 08000000 		.4byte	.LVL7
+ 2071 0d13 DD0F0000 		.4byte	0xfdd
+ 2072 0d17 210D0000 		.4byte	0xd21
+ 2073 0d1b 20       		.uleb128 0x20
+ 2074 0d1c 01       		.uleb128 0x1
+ 2075 0d1d 50       		.byte	0x50
+ 2076 0d1e 01       		.uleb128 0x1
+ 2077 0d1f 30       		.byte	0x30
+ 2078 0d20 00       		.byte	0
+ 2079 0d21 1F       		.uleb128 0x1f
+ 2080 0d22 10000000 		.4byte	.LVL8
+ 2081 0d26 E90F0000 		.4byte	0xfe9
+ 2082 0d2a 380D0000 		.4byte	0xd38
+ 2083 0d2e 20       		.uleb128 0x20
+ 2084 0d2f 01       		.uleb128 0x1
+ 2085 0d30 50       		.byte	0x50
+ 2086 0d31 05       		.uleb128 0x5
+ 2087 0d32 0C       		.byte	0xc
+ 2088 0d33 FFFFFF00 		.4byte	0xffffff
+ 2089 0d37 00       		.byte	0
+ 2090 0d38 1E       		.uleb128 0x1e
+ 2091 0d39 14000000 		.4byte	.LVL9
+ 2092 0d3d F50F0000 		.4byte	0xff5
+ 2093 0d41 21       		.uleb128 0x21
+ 2094 0d42 1C000000 		.4byte	.LVL10
+ 2095 0d46 640C0000 		.4byte	0xc64
+ 2096 0d4a 20       		.uleb128 0x20
+ 2097 0d4b 01       		.uleb128 0x1
+ 2098 0d4c 50       		.byte	0x50
+ 2099 0d4d 01       		.uleb128 0x1
+ 2100 0d4e 31       		.byte	0x31
+ 2101 0d4f 20       		.uleb128 0x20
+ 2102 0d50 01       		.uleb128 0x1
+ 2103 0d51 51       		.byte	0x51
+ 2104 0d52 01       		.uleb128 0x1
+ 2105 0d53 31       		.byte	0x31
+ 2106 0d54 00       		.byte	0
+ 2107 0d55 00       		.byte	0
+ 2108 0d56 1B       		.uleb128 0x1b
+ 2109 0d57 B2020000 		.4byte	.LASF210
+ 2110 0d5b 01       		.byte	0x1
+ 2111 0d5c 88       		.byte	0x88
+ 2112 0d5d 00000000 		.4byte	.LFB559
+ 2113 0d61 14000000 		.4byte	.LFE559-.LFB559
+ 2114 0d65 01       		.uleb128 0x1
+ 2115 0d66 9C       		.byte	0x9c
+ 2116 0d67 7E0D0000 		.4byte	0xd7e
+ 2117 0d6b 1E       		.uleb128 0x1e
+ 2118 0d6c 06000000 		.4byte	.LVL11
+ 2119 0d70 01100000 		.4byte	0x1001
+ 2120 0d74 1E       		.uleb128 0x1e
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 44
+
+
+ 2121 0d75 0E000000 		.4byte	.LVL12
+ 2122 0d79 01100000 		.4byte	0x1001
+ 2123 0d7d 00       		.byte	0
+ 2124 0d7e 22       		.uleb128 0x22
+ 2125 0d7f 200D0000 		.4byte	.LASF239
+ 2126 0d83 01       		.byte	0x1
+ 2127 0d84 9E       		.byte	0x9e
+ 2128 0d85 94000000 		.4byte	0x94
+ 2129 0d89 00000000 		.4byte	.LFB560
+ 2130 0d8d 9C000000 		.4byte	.LFE560-.LFB560
+ 2131 0d91 01       		.uleb128 0x1
+ 2132 0d92 9C       		.byte	0x9c
+ 2133 0d93 210F0000 		.4byte	0xf21
+ 2134 0d97 23       		.uleb128 0x23
+ 2135 0d98 5C0C0000 		.4byte	0xc5c
+ 2136 0d9c 02000000 		.4byte	.LBB4
+ 2137 0da0 02000000 		.4byte	.LBE4-.LBB4
+ 2138 0da4 01       		.byte	0x1
+ 2139 0da5 A1       		.byte	0xa1
+ 2140 0da6 1E       		.uleb128 0x1e
+ 2141 0da7 08000000 		.4byte	.LVL13
+ 2142 0dab 0C100000 		.4byte	0x100c
+ 2143 0daf 1F       		.uleb128 0x1f
+ 2144 0db0 0E000000 		.4byte	.LVL14
+ 2145 0db4 18100000 		.4byte	0x1018
+ 2146 0db8 C20D0000 		.4byte	0xdc2
+ 2147 0dbc 20       		.uleb128 0x20
+ 2148 0dbd 01       		.uleb128 0x1
+ 2149 0dbe 50       		.byte	0x50
+ 2150 0dbf 01       		.uleb128 0x1
+ 2151 0dc0 44       		.byte	0x44
+ 2152 0dc1 00       		.byte	0
+ 2153 0dc2 1F       		.uleb128 0x1f
+ 2154 0dc3 14000000 		.4byte	.LVL15
+ 2155 0dc7 23100000 		.4byte	0x1023
+ 2156 0dcb D50D0000 		.4byte	0xdd5
+ 2157 0dcf 20       		.uleb128 0x20
+ 2158 0dd0 01       		.uleb128 0x1
+ 2159 0dd1 50       		.byte	0x50
+ 2160 0dd2 01       		.uleb128 0x1
+ 2161 0dd3 31       		.byte	0x31
+ 2162 0dd4 00       		.byte	0
+ 2163 0dd5 1F       		.uleb128 0x1f
+ 2164 0dd6 1A000000 		.4byte	.LVL16
+ 2165 0dda 2E100000 		.4byte	0x102e
+ 2166 0dde E80D0000 		.4byte	0xde8
+ 2167 0de2 20       		.uleb128 0x20
+ 2168 0de3 01       		.uleb128 0x1
+ 2169 0de4 50       		.byte	0x50
+ 2170 0de5 01       		.uleb128 0x1
+ 2171 0de6 31       		.byte	0x31
+ 2172 0de7 00       		.byte	0
+ 2173 0de8 1F       		.uleb128 0x1f
+ 2174 0de9 20000000 		.4byte	.LVL17
+ 2175 0ded DD0F0000 		.4byte	0xfdd
+ 2176 0df1 FB0D0000 		.4byte	0xdfb
+ 2177 0df5 20       		.uleb128 0x20
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 45
+
+
+ 2178 0df6 01       		.uleb128 0x1
+ 2179 0df7 50       		.byte	0x50
+ 2180 0df8 01       		.uleb128 0x1
+ 2181 0df9 30       		.byte	0x30
+ 2182 0dfa 00       		.byte	0
+ 2183 0dfb 1F       		.uleb128 0x1f
+ 2184 0dfc 28000000 		.4byte	.LVL18
+ 2185 0e00 E90F0000 		.4byte	0xfe9
+ 2186 0e04 120E0000 		.4byte	0xe12
+ 2187 0e08 20       		.uleb128 0x20
+ 2188 0e09 01       		.uleb128 0x1
+ 2189 0e0a 50       		.byte	0x50
+ 2190 0e0b 05       		.uleb128 0x5
+ 2191 0e0c 0C       		.byte	0xc
+ 2192 0e0d FFFFFF00 		.4byte	0xffffff
+ 2193 0e11 00       		.byte	0
+ 2194 0e12 1E       		.uleb128 0x1e
+ 2195 0e13 2C000000 		.4byte	.LVL19
+ 2196 0e17 F50F0000 		.4byte	0xff5
+ 2197 0e1b 1F       		.uleb128 0x1f
+ 2198 0e1c 3A000000 		.4byte	.LVL20
+ 2199 0e20 3A100000 		.4byte	0x103a
+ 2200 0e24 400E0000 		.4byte	0xe40
+ 2201 0e28 20       		.uleb128 0x20
+ 2202 0e29 01       		.uleb128 0x1
+ 2203 0e2a 50       		.byte	0x50
+ 2204 0e2b 01       		.uleb128 0x1
+ 2205 0e2c 31       		.byte	0x31
+ 2206 0e2d 20       		.uleb128 0x20
+ 2207 0e2e 01       		.uleb128 0x1
+ 2208 0e2f 51       		.byte	0x51
+ 2209 0e30 01       		.uleb128 0x1
+ 2210 0e31 31       		.byte	0x31
+ 2211 0e32 20       		.uleb128 0x20
+ 2212 0e33 01       		.uleb128 0x1
+ 2213 0e34 52       		.byte	0x52
+ 2214 0e35 03       		.uleb128 0x3
+ 2215 0e36 0A       		.byte	0xa
+ 2216 0e37 0701     		.2byte	0x107
+ 2217 0e39 20       		.uleb128 0x20
+ 2218 0e3a 01       		.uleb128 0x1
+ 2219 0e3b 53       		.byte	0x53
+ 2220 0e3c 02       		.uleb128 0x2
+ 2221 0e3d 08       		.byte	0x8
+ 2222 0e3e AF       		.byte	0xaf
+ 2223 0e3f 00       		.byte	0
+ 2224 0e40 1F       		.uleb128 0x1f
+ 2225 0e41 40000000 		.4byte	.LVL21
+ 2226 0e45 2E100000 		.4byte	0x102e
+ 2227 0e49 530E0000 		.4byte	0xe53
+ 2228 0e4d 20       		.uleb128 0x20
+ 2229 0e4e 01       		.uleb128 0x1
+ 2230 0e4f 50       		.byte	0x50
+ 2231 0e50 01       		.uleb128 0x1
+ 2232 0e51 34       		.byte	0x34
+ 2233 0e52 00       		.byte	0
+ 2234 0e53 1F       		.uleb128 0x1f
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 46
+
+
+ 2235 0e54 4C000000 		.4byte	.LVL22
+ 2236 0e58 46100000 		.4byte	0x1046
+ 2237 0e5c 780E0000 		.4byte	0xe78
+ 2238 0e60 20       		.uleb128 0x20
+ 2239 0e61 01       		.uleb128 0x1
+ 2240 0e62 50       		.byte	0x50
+ 2241 0e63 01       		.uleb128 0x1
+ 2242 0e64 44       		.byte	0x44
+ 2243 0e65 20       		.uleb128 0x20
+ 2244 0e66 01       		.uleb128 0x1
+ 2245 0e67 51       		.byte	0x51
+ 2246 0e68 02       		.uleb128 0x2
+ 2247 0e69 08       		.byte	0x8
+ 2248 0e6a 41       		.byte	0x41
+ 2249 0e6b 20       		.uleb128 0x20
+ 2250 0e6c 01       		.uleb128 0x1
+ 2251 0e6d 52       		.byte	0x52
+ 2252 0e6e 02       		.uleb128 0x2
+ 2253 0e6f 08       		.byte	0x8
+ 2254 0e70 F3       		.byte	0xf3
+ 2255 0e71 20       		.uleb128 0x20
+ 2256 0e72 01       		.uleb128 0x1
+ 2257 0e73 53       		.byte	0x53
+ 2258 0e74 02       		.uleb128 0x2
+ 2259 0e75 08       		.byte	0x8
+ 2260 0e76 41       		.byte	0x41
+ 2261 0e77 00       		.byte	0
+ 2262 0e78 1F       		.uleb128 0x1f
+ 2263 0e79 52000000 		.4byte	.LVL23
+ 2264 0e7d DD0F0000 		.4byte	0xfdd
+ 2265 0e81 8B0E0000 		.4byte	0xe8b
+ 2266 0e85 20       		.uleb128 0x20
+ 2267 0e86 01       		.uleb128 0x1
+ 2268 0e87 50       		.byte	0x50
+ 2269 0e88 01       		.uleb128 0x1
+ 2270 0e89 30       		.byte	0x30
+ 2271 0e8a 00       		.byte	0
+ 2272 0e8b 1F       		.uleb128 0x1f
+ 2273 0e8c 5A000000 		.4byte	.LVL24
+ 2274 0e90 E90F0000 		.4byte	0xfe9
+ 2275 0e94 A20E0000 		.4byte	0xea2
+ 2276 0e98 20       		.uleb128 0x20
+ 2277 0e99 01       		.uleb128 0x1
+ 2278 0e9a 50       		.byte	0x50
+ 2279 0e9b 05       		.uleb128 0x5
+ 2280 0e9c 0C       		.byte	0xc
+ 2281 0e9d FFFFFF00 		.4byte	0xffffff
+ 2282 0ea1 00       		.byte	0
+ 2283 0ea2 1E       		.uleb128 0x1e
+ 2284 0ea3 60000000 		.4byte	.LVL25
+ 2285 0ea7 52100000 		.4byte	0x1052
+ 2286 0eab 1F       		.uleb128 0x1f
+ 2287 0eac 66000000 		.4byte	.LVL26
+ 2288 0eb0 5E100000 		.4byte	0x105e
+ 2289 0eb4 BE0E0000 		.4byte	0xebe
+ 2290 0eb8 20       		.uleb128 0x20
+ 2291 0eb9 01       		.uleb128 0x1
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 47
+
+
+ 2292 0eba 50       		.byte	0x50
+ 2293 0ebb 01       		.uleb128 0x1
+ 2294 0ebc 32       		.byte	0x32
+ 2295 0ebd 00       		.byte	0
+ 2296 0ebe 1F       		.uleb128 0x1f
+ 2297 0ebf 70000000 		.4byte	.LVL27
+ 2298 0ec3 6A100000 		.4byte	0x106a
+ 2299 0ec7 E00E0000 		.4byte	0xee0
+ 2300 0ecb 20       		.uleb128 0x20
+ 2301 0ecc 01       		.uleb128 0x1
+ 2302 0ecd 50       		.byte	0x50
+ 2303 0ece 05       		.uleb128 0x5
+ 2304 0ecf 03       		.byte	0x3
+ 2305 0ed0 00000000 		.4byte	.LC0
+ 2306 0ed4 20       		.uleb128 0x20
+ 2307 0ed5 01       		.uleb128 0x1
+ 2308 0ed6 51       		.byte	0x51
+ 2309 0ed7 02       		.uleb128 0x2
+ 2310 0ed8 08       		.byte	0x8
+ 2311 0ed9 84       		.byte	0x84
+ 2312 0eda 20       		.uleb128 0x20
+ 2313 0edb 01       		.uleb128 0x1
+ 2314 0edc 52       		.byte	0x52
+ 2315 0edd 01       		.uleb128 0x1
+ 2316 0ede 4E       		.byte	0x4e
+ 2317 0edf 00       		.byte	0
+ 2318 0ee0 1E       		.uleb128 0x1e
+ 2319 0ee1 76000000 		.4byte	.LVL28
+ 2320 0ee5 52100000 		.4byte	0x1052
+ 2321 0ee9 1F       		.uleb128 0x1f
+ 2322 0eea 80000000 		.4byte	.LVL29
+ 2323 0eee 6A100000 		.4byte	0x106a
+ 2324 0ef2 0C0F0000 		.4byte	0xf0c
+ 2325 0ef6 20       		.uleb128 0x20
+ 2326 0ef7 01       		.uleb128 0x1
+ 2327 0ef8 50       		.byte	0x50
+ 2328 0ef9 05       		.uleb128 0x5
+ 2329 0efa 03       		.byte	0x3
+ 2330 0efb 08000000 		.4byte	.LC1
+ 2331 0eff 20       		.uleb128 0x20
+ 2332 0f00 01       		.uleb128 0x1
+ 2333 0f01 51       		.byte	0x51
+ 2334 0f02 02       		.uleb128 0x2
+ 2335 0f03 08       		.byte	0x8
+ 2336 0f04 84       		.byte	0x84
+ 2337 0f05 20       		.uleb128 0x20
+ 2338 0f06 01       		.uleb128 0x1
+ 2339 0f07 52       		.byte	0x52
+ 2340 0f08 02       		.uleb128 0x2
+ 2341 0f09 08       		.byte	0x8
+ 2342 0f0a 46       		.byte	0x46
+ 2343 0f0b 00       		.byte	0
+ 2344 0f0c 21       		.uleb128 0x21
+ 2345 0f0d 88000000 		.4byte	.LVL30
+ 2346 0f11 640C0000 		.4byte	0xc64
+ 2347 0f15 20       		.uleb128 0x20
+ 2348 0f16 01       		.uleb128 0x1
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 48
+
+
+ 2349 0f17 50       		.byte	0x50
+ 2350 0f18 01       		.uleb128 0x1
+ 2351 0f19 31       		.byte	0x31
+ 2352 0f1a 20       		.uleb128 0x20
+ 2353 0f1b 01       		.uleb128 0x1
+ 2354 0f1c 51       		.byte	0x51
+ 2355 0f1d 01       		.uleb128 0x1
+ 2356 0f1e 31       		.byte	0x31
+ 2357 0f1f 00       		.byte	0
+ 2358 0f20 00       		.byte	0
+ 2359 0f21 24       		.uleb128 0x24
+ 2360 0f22 46090000 		.4byte	.LASF211
+ 2361 0f26 0C       		.byte	0xc
+ 2362 0f27 F907     		.2byte	0x7f9
+ 2363 0f29 2D0F0000 		.4byte	0xf2d
+ 2364 0f2d 05       		.uleb128 0x5
+ 2365 0f2e C3000000 		.4byte	0xc3
+ 2366 0f32 25       		.uleb128 0x25
+ 2367 0f33 B3080000 		.4byte	.LASF212
+ 2368 0f37 05       		.byte	0x5
+ 2369 0f38 A7       		.byte	0xa7
+ 2370 0f39 3D0F0000 		.4byte	0xf3d
+ 2371 0f3d 0A       		.uleb128 0xa
+ 2372 0f3e 04       		.byte	0x4
+ 2373 0f3f 430F0000 		.4byte	0xf43
+ 2374 0f43 10       		.uleb128 0x10
+ 2375 0f44 FD040000 		.4byte	0x4fd
+ 2376 0f48 25       		.uleb128 0x25
+ 2377 0f49 090C0000 		.4byte	.LASF213
+ 2378 0f4d 0D       		.byte	0xd
+ 2379 0f4e 5E       		.byte	0x5e
+ 2380 0f4f D2050000 		.4byte	0x5d2
+ 2381 0f53 25       		.uleb128 0x25
+ 2382 0f54 FC060000 		.4byte	.LASF214
+ 2383 0f58 0E       		.byte	0xe
+ 2384 0f59 1F       		.byte	0x1f
+ 2385 0f5a 5E0F0000 		.4byte	0xf5e
+ 2386 0f5e 10       		.uleb128 0x10
+ 2387 0f5f CF060000 		.4byte	0x6cf
+ 2388 0f63 24       		.uleb128 0x24
+ 2389 0f64 1A010000 		.4byte	.LASF215
+ 2390 0f68 0F       		.byte	0xf
+ 2391 0f69 0708     		.2byte	0x807
+ 2392 0f6b 470B0000 		.4byte	0xb47
+ 2393 0f6f 24       		.uleb128 0x24
+ 2394 0f70 60040000 		.4byte	.LASF216
+ 2395 0f74 0F       		.byte	0xf
+ 2396 0f75 0E08     		.2byte	0x80e
+ 2397 0f77 470B0000 		.4byte	0xb47
+ 2398 0f7b 26       		.uleb128 0x26
+ 2399 0f7c 0F050000 		.4byte	0x50f
+ 2400 0f80 8B0F0000 		.4byte	0xf8b
+ 2401 0f84 27       		.uleb128 0x27
+ 2402 0f85 D9000000 		.4byte	0xd9
+ 2403 0f89 7C       		.byte	0x7c
+ 2404 0f8a 00       		.byte	0
+ 2405 0f8b 28       		.uleb128 0x28
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 49
+
+
+ 2406 0f8c 5D010000 		.4byte	.LASF217
+ 2407 0f90 01       		.byte	0x1
+ 2408 0f91 39       		.byte	0x39
+ 2409 0f92 7B0F0000 		.4byte	0xf7b
+ 2410 0f96 05       		.uleb128 0x5
+ 2411 0f97 03       		.byte	0x3
+ 2412 0f98 00000000 		.4byte	vectorSinus
+ 2413 0f9c 26       		.uleb128 0x26
+ 2414 0f9d 1D050000 		.4byte	0x51d
+ 2415 0fa1 AD0F0000 		.4byte	0xfad
+ 2416 0fa5 29       		.uleb128 0x29
+ 2417 0fa6 D9000000 		.4byte	0xd9
+ 2418 0faa AF16     		.2byte	0x16af
+ 2419 0fac 00       		.byte	0
+ 2420 0fad 28       		.uleb128 0x28
+ 2421 0fae 6B030000 		.4byte	.LASF218
+ 2422 0fb2 01       		.byte	0x1
+ 2423 0fb3 3C       		.byte	0x3c
+ 2424 0fb4 9C0F0000 		.4byte	0xf9c
+ 2425 0fb8 05       		.uleb128 0x5
+ 2426 0fb9 03       		.byte	0x3
+ 2427 0fba 00000000 		.4byte	imageBufferCache
+ 2428 0fbe 2A       		.uleb128 0x2a
+ 2429 0fbf B30C0000 		.4byte	.LASF219
+ 2430 0fc3 B30C0000 		.4byte	.LASF219
+ 2431 0fc7 10       		.byte	0x10
+ 2432 0fc8 34       		.byte	0x34
+ 2433 0fc9 2A       		.uleb128 0x2a
+ 2434 0fca 0A0B0000 		.4byte	.LASF220
+ 2435 0fce 0A0B0000 		.4byte	.LASF220
+ 2436 0fd2 0B       		.byte	0xb
+ 2437 0fd3 7E       		.byte	0x7e
+ 2438 0fd4 2B       		.uleb128 0x2b
+ 2439 0fd5 44030000 		.4byte	.LASF240
+ 2440 0fd9 44030000 		.4byte	.LASF240
+ 2441 0fdd 2C       		.uleb128 0x2c
+ 2442 0fde D6000000 		.4byte	.LASF221
+ 2443 0fe2 D6000000 		.4byte	.LASF221
+ 2444 0fe6 0F       		.byte	0xf
+ 2445 0fe7 C101     		.2byte	0x1c1
+ 2446 0fe9 2C       		.uleb128 0x2c
+ 2447 0fea 010A0000 		.4byte	.LASF222
+ 2448 0fee 010A0000 		.4byte	.LASF222
+ 2449 0ff2 0F       		.byte	0xf
+ 2450 0ff3 C001     		.2byte	0x1c0
+ 2451 0ff5 2C       		.uleb128 0x2c
+ 2452 0ff6 8E060000 		.4byte	.LASF223
+ 2453 0ffa 8E060000 		.4byte	.LASF223
+ 2454 0ffe 0F       		.byte	0xf
+ 2455 0fff F601     		.2byte	0x1f6
+ 2456 1001 2A       		.uleb128 0x2a
+ 2457 1002 D3090000 		.4byte	.LASF224
+ 2458 1006 D3090000 		.4byte	.LASF224
+ 2459 100a 11       		.byte	0x11
+ 2460 100b 30       		.byte	0x30
+ 2461 100c 2C       		.uleb128 0x2c
+ 2462 100d EB0C0000 		.4byte	.LASF225
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 50
+
+
+ 2463 1011 EB0C0000 		.4byte	.LASF225
+ 2464 1015 0F       		.byte	0xf
+ 2465 1016 6D01     		.2byte	0x16d
+ 2466 1018 2A       		.uleb128 0x2a
+ 2467 1019 37000000 		.4byte	.LASF226
+ 2468 101d 37000000 		.4byte	.LASF226
+ 2469 1021 0B       		.byte	0xb
+ 2470 1022 79       		.byte	0x79
+ 2471 1023 2A       		.uleb128 0x2a
+ 2472 1024 9D000000 		.4byte	.LASF227
+ 2473 1028 9D000000 		.4byte	.LASF227
+ 2474 102c 0B       		.byte	0xb
+ 2475 102d 7A       		.byte	0x7a
+ 2476 102e 2C       		.uleb128 0x2c
+ 2477 102f 370D0000 		.4byte	.LASF228
+ 2478 1033 370D0000 		.4byte	.LASF228
+ 2479 1037 0F       		.byte	0xf
+ 2480 1038 C501     		.2byte	0x1c5
+ 2481 103a 2C       		.uleb128 0x2c
+ 2482 103b 4B070000 		.4byte	.LASF229
+ 2483 103f 4B070000 		.4byte	.LASF229
+ 2484 1043 0F       		.byte	0xf
+ 2485 1044 1202     		.2byte	0x212
+ 2486 1046 2C       		.uleb128 0x2c
+ 2487 1047 490C0000 		.4byte	.LASF230
+ 2488 104b 490C0000 		.4byte	.LASF230
+ 2489 104f 0F       		.byte	0xf
+ 2490 1050 0902     		.2byte	0x209
+ 2491 1052 2C       		.uleb128 0x2c
+ 2492 1053 A4060000 		.4byte	.LASF231
+ 2493 1057 A4060000 		.4byte	.LASF231
+ 2494 105b 0F       		.byte	0xf
+ 2495 105c 2B03     		.2byte	0x32b
+ 2496 105e 2C       		.uleb128 0x2c
+ 2497 105f 8F0C0000 		.4byte	.LASF232
+ 2498 1063 8F0C0000 		.4byte	.LASF232
+ 2499 1067 0F       		.byte	0xf
+ 2500 1068 2603     		.2byte	0x326
+ 2501 106a 2C       		.uleb128 0x2c
+ 2502 106b 38060000 		.4byte	.LASF233
+ 2503 106f 38060000 		.4byte	.LASF233
+ 2504 1073 0F       		.byte	0xf
+ 2505 1074 0503     		.2byte	0x305
+ 2506 1076 00       		.byte	0
+ 2507              		.section	.debug_abbrev,"",%progbits
+ 2508              	.Ldebug_abbrev0:
+ 2509 0000 01       		.uleb128 0x1
+ 2510 0001 11       		.uleb128 0x11
+ 2511 0002 01       		.byte	0x1
+ 2512 0003 25       		.uleb128 0x25
+ 2513 0004 0E       		.uleb128 0xe
+ 2514 0005 13       		.uleb128 0x13
+ 2515 0006 0B       		.uleb128 0xb
+ 2516 0007 03       		.uleb128 0x3
+ 2517 0008 0E       		.uleb128 0xe
+ 2518 0009 1B       		.uleb128 0x1b
+ 2519 000a 0E       		.uleb128 0xe
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 51
+
+
+ 2520 000b 55       		.uleb128 0x55
+ 2521 000c 17       		.uleb128 0x17
+ 2522 000d 11       		.uleb128 0x11
+ 2523 000e 01       		.uleb128 0x1
+ 2524 000f 10       		.uleb128 0x10
+ 2525 0010 17       		.uleb128 0x17
+ 2526 0011 00       		.byte	0
+ 2527 0012 00       		.byte	0
+ 2528 0013 02       		.uleb128 0x2
+ 2529 0014 24       		.uleb128 0x24
+ 2530 0015 00       		.byte	0
+ 2531 0016 0B       		.uleb128 0xb
+ 2532 0017 0B       		.uleb128 0xb
+ 2533 0018 3E       		.uleb128 0x3e
+ 2534 0019 0B       		.uleb128 0xb
+ 2535 001a 03       		.uleb128 0x3
+ 2536 001b 0E       		.uleb128 0xe
+ 2537 001c 00       		.byte	0
+ 2538 001d 00       		.byte	0
+ 2539 001e 03       		.uleb128 0x3
+ 2540 001f 16       		.uleb128 0x16
+ 2541 0020 00       		.byte	0
+ 2542 0021 03       		.uleb128 0x3
+ 2543 0022 0E       		.uleb128 0xe
+ 2544 0023 3A       		.uleb128 0x3a
+ 2545 0024 0B       		.uleb128 0xb
+ 2546 0025 3B       		.uleb128 0x3b
+ 2547 0026 0B       		.uleb128 0xb
+ 2548 0027 49       		.uleb128 0x49
+ 2549 0028 13       		.uleb128 0x13
+ 2550 0029 00       		.byte	0
+ 2551 002a 00       		.byte	0
+ 2552 002b 04       		.uleb128 0x4
+ 2553 002c 24       		.uleb128 0x24
+ 2554 002d 00       		.byte	0
+ 2555 002e 0B       		.uleb128 0xb
+ 2556 002f 0B       		.uleb128 0xb
+ 2557 0030 3E       		.uleb128 0x3e
+ 2558 0031 0B       		.uleb128 0xb
+ 2559 0032 03       		.uleb128 0x3
+ 2560 0033 08       		.uleb128 0x8
+ 2561 0034 00       		.byte	0
+ 2562 0035 00       		.byte	0
+ 2563 0036 05       		.uleb128 0x5
+ 2564 0037 35       		.uleb128 0x35
+ 2565 0038 00       		.byte	0
+ 2566 0039 49       		.uleb128 0x49
+ 2567 003a 13       		.uleb128 0x13
+ 2568 003b 00       		.byte	0
+ 2569 003c 00       		.byte	0
+ 2570 003d 06       		.uleb128 0x6
+ 2571 003e 13       		.uleb128 0x13
+ 2572 003f 01       		.byte	0x1
+ 2573 0040 0B       		.uleb128 0xb
+ 2574 0041 0B       		.uleb128 0xb
+ 2575 0042 3A       		.uleb128 0x3a
+ 2576 0043 0B       		.uleb128 0xb
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 52
+
+
+ 2577 0044 3B       		.uleb128 0x3b
+ 2578 0045 0B       		.uleb128 0xb
+ 2579 0046 01       		.uleb128 0x1
+ 2580 0047 13       		.uleb128 0x13
+ 2581 0048 00       		.byte	0
+ 2582 0049 00       		.byte	0
+ 2583 004a 07       		.uleb128 0x7
+ 2584 004b 0D       		.uleb128 0xd
+ 2585 004c 00       		.byte	0
+ 2586 004d 03       		.uleb128 0x3
+ 2587 004e 0E       		.uleb128 0xe
+ 2588 004f 3A       		.uleb128 0x3a
+ 2589 0050 0B       		.uleb128 0xb
+ 2590 0051 3B       		.uleb128 0x3b
+ 2591 0052 0B       		.uleb128 0xb
+ 2592 0053 49       		.uleb128 0x49
+ 2593 0054 13       		.uleb128 0x13
+ 2594 0055 38       		.uleb128 0x38
+ 2595 0056 0B       		.uleb128 0xb
+ 2596 0057 00       		.byte	0
+ 2597 0058 00       		.byte	0
+ 2598 0059 08       		.uleb128 0x8
+ 2599 005a 16       		.uleb128 0x16
+ 2600 005b 00       		.byte	0
+ 2601 005c 03       		.uleb128 0x3
+ 2602 005d 0E       		.uleb128 0xe
+ 2603 005e 3A       		.uleb128 0x3a
+ 2604 005f 0B       		.uleb128 0xb
+ 2605 0060 3B       		.uleb128 0x3b
+ 2606 0061 05       		.uleb128 0x5
+ 2607 0062 49       		.uleb128 0x49
+ 2608 0063 13       		.uleb128 0x13
+ 2609 0064 00       		.byte	0
+ 2610 0065 00       		.byte	0
+ 2611 0066 09       		.uleb128 0x9
+ 2612 0067 0F       		.uleb128 0xf
+ 2613 0068 00       		.byte	0
+ 2614 0069 0B       		.uleb128 0xb
+ 2615 006a 0B       		.uleb128 0xb
+ 2616 006b 00       		.byte	0
+ 2617 006c 00       		.byte	0
+ 2618 006d 0A       		.uleb128 0xa
+ 2619 006e 0F       		.uleb128 0xf
+ 2620 006f 00       		.byte	0
+ 2621 0070 0B       		.uleb128 0xb
+ 2622 0071 0B       		.uleb128 0xb
+ 2623 0072 49       		.uleb128 0x49
+ 2624 0073 13       		.uleb128 0x13
+ 2625 0074 00       		.byte	0
+ 2626 0075 00       		.byte	0
+ 2627 0076 0B       		.uleb128 0xb
+ 2628 0077 15       		.uleb128 0x15
+ 2629 0078 01       		.byte	0x1
+ 2630 0079 27       		.uleb128 0x27
+ 2631 007a 19       		.uleb128 0x19
+ 2632 007b 01       		.uleb128 0x1
+ 2633 007c 13       		.uleb128 0x13
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 53
+
+
+ 2634 007d 00       		.byte	0
+ 2635 007e 00       		.byte	0
+ 2636 007f 0C       		.uleb128 0xc
+ 2637 0080 05       		.uleb128 0x5
+ 2638 0081 00       		.byte	0
+ 2639 0082 49       		.uleb128 0x49
+ 2640 0083 13       		.uleb128 0x13
+ 2641 0084 00       		.byte	0
+ 2642 0085 00       		.byte	0
+ 2643 0086 0D       		.uleb128 0xd
+ 2644 0087 13       		.uleb128 0x13
+ 2645 0088 01       		.byte	0x1
+ 2646 0089 03       		.uleb128 0x3
+ 2647 008a 0E       		.uleb128 0xe
+ 2648 008b 0B       		.uleb128 0xb
+ 2649 008c 0B       		.uleb128 0xb
+ 2650 008d 3A       		.uleb128 0x3a
+ 2651 008e 0B       		.uleb128 0xb
+ 2652 008f 3B       		.uleb128 0x3b
+ 2653 0090 05       		.uleb128 0x5
+ 2654 0091 01       		.uleb128 0x1
+ 2655 0092 13       		.uleb128 0x13
+ 2656 0093 00       		.byte	0
+ 2657 0094 00       		.byte	0
+ 2658 0095 0E       		.uleb128 0xe
+ 2659 0096 0D       		.uleb128 0xd
+ 2660 0097 00       		.byte	0
+ 2661 0098 03       		.uleb128 0x3
+ 2662 0099 0E       		.uleb128 0xe
+ 2663 009a 3A       		.uleb128 0x3a
+ 2664 009b 0B       		.uleb128 0xb
+ 2665 009c 3B       		.uleb128 0x3b
+ 2666 009d 05       		.uleb128 0x5
+ 2667 009e 49       		.uleb128 0x49
+ 2668 009f 13       		.uleb128 0x13
+ 2669 00a0 38       		.uleb128 0x38
+ 2670 00a1 0B       		.uleb128 0xb
+ 2671 00a2 00       		.byte	0
+ 2672 00a3 00       		.byte	0
+ 2673 00a4 0F       		.uleb128 0xf
+ 2674 00a5 13       		.uleb128 0x13
+ 2675 00a6 01       		.byte	0x1
+ 2676 00a7 03       		.uleb128 0x3
+ 2677 00a8 0E       		.uleb128 0xe
+ 2678 00a9 0B       		.uleb128 0xb
+ 2679 00aa 0B       		.uleb128 0xb
+ 2680 00ab 3A       		.uleb128 0x3a
+ 2681 00ac 0B       		.uleb128 0xb
+ 2682 00ad 3B       		.uleb128 0x3b
+ 2683 00ae 0B       		.uleb128 0xb
+ 2684 00af 01       		.uleb128 0x1
+ 2685 00b0 13       		.uleb128 0x13
+ 2686 00b1 00       		.byte	0
+ 2687 00b2 00       		.byte	0
+ 2688 00b3 10       		.uleb128 0x10
+ 2689 00b4 26       		.uleb128 0x26
+ 2690 00b5 00       		.byte	0
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 54
+
+
+ 2691 00b6 49       		.uleb128 0x49
+ 2692 00b7 13       		.uleb128 0x13
+ 2693 00b8 00       		.byte	0
+ 2694 00b9 00       		.byte	0
+ 2695 00ba 11       		.uleb128 0x11
+ 2696 00bb 26       		.uleb128 0x26
+ 2697 00bc 00       		.byte	0
+ 2698 00bd 00       		.byte	0
+ 2699 00be 00       		.byte	0
+ 2700 00bf 12       		.uleb128 0x12
+ 2701 00c0 0D       		.uleb128 0xd
+ 2702 00c1 00       		.byte	0
+ 2703 00c2 03       		.uleb128 0x3
+ 2704 00c3 08       		.uleb128 0x8
+ 2705 00c4 3A       		.uleb128 0x3a
+ 2706 00c5 0B       		.uleb128 0xb
+ 2707 00c6 3B       		.uleb128 0x3b
+ 2708 00c7 0B       		.uleb128 0xb
+ 2709 00c8 49       		.uleb128 0x49
+ 2710 00c9 13       		.uleb128 0x13
+ 2711 00ca 38       		.uleb128 0x38
+ 2712 00cb 0B       		.uleb128 0xb
+ 2713 00cc 00       		.byte	0
+ 2714 00cd 00       		.byte	0
+ 2715 00ce 13       		.uleb128 0x13
+ 2716 00cf 15       		.uleb128 0x15
+ 2717 00d0 01       		.byte	0x1
+ 2718 00d1 27       		.uleb128 0x27
+ 2719 00d2 19       		.uleb128 0x19
+ 2720 00d3 49       		.uleb128 0x49
+ 2721 00d4 13       		.uleb128 0x13
+ 2722 00d5 01       		.uleb128 0x1
+ 2723 00d6 13       		.uleb128 0x13
+ 2724 00d7 00       		.byte	0
+ 2725 00d8 00       		.byte	0
+ 2726 00d9 14       		.uleb128 0x14
+ 2727 00da 13       		.uleb128 0x13
+ 2728 00db 01       		.byte	0x1
+ 2729 00dc 0B       		.uleb128 0xb
+ 2730 00dd 0B       		.uleb128 0xb
+ 2731 00de 3A       		.uleb128 0x3a
+ 2732 00df 0B       		.uleb128 0xb
+ 2733 00e0 3B       		.uleb128 0x3b
+ 2734 00e1 05       		.uleb128 0x5
+ 2735 00e2 01       		.uleb128 0x1
+ 2736 00e3 13       		.uleb128 0x13
+ 2737 00e4 00       		.byte	0
+ 2738 00e5 00       		.byte	0
+ 2739 00e6 15       		.uleb128 0x15
+ 2740 00e7 0D       		.uleb128 0xd
+ 2741 00e8 00       		.byte	0
+ 2742 00e9 03       		.uleb128 0x3
+ 2743 00ea 08       		.uleb128 0x8
+ 2744 00eb 3A       		.uleb128 0x3a
+ 2745 00ec 0B       		.uleb128 0xb
+ 2746 00ed 3B       		.uleb128 0x3b
+ 2747 00ee 05       		.uleb128 0x5
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 55
+
+
+ 2748 00ef 49       		.uleb128 0x49
+ 2749 00f0 13       		.uleb128 0x13
+ 2750 00f1 38       		.uleb128 0x38
+ 2751 00f2 0B       		.uleb128 0xb
+ 2752 00f3 00       		.byte	0
+ 2753 00f4 00       		.byte	0
+ 2754 00f5 16       		.uleb128 0x16
+ 2755 00f6 17       		.uleb128 0x17
+ 2756 00f7 01       		.byte	0x1
+ 2757 00f8 0B       		.uleb128 0xb
+ 2758 00f9 0B       		.uleb128 0xb
+ 2759 00fa 3A       		.uleb128 0x3a
+ 2760 00fb 0B       		.uleb128 0xb
+ 2761 00fc 3B       		.uleb128 0x3b
+ 2762 00fd 05       		.uleb128 0x5
+ 2763 00fe 01       		.uleb128 0x1
+ 2764 00ff 13       		.uleb128 0x13
+ 2765 0100 00       		.byte	0
+ 2766 0101 00       		.byte	0
+ 2767 0102 17       		.uleb128 0x17
+ 2768 0103 0D       		.uleb128 0xd
+ 2769 0104 00       		.byte	0
+ 2770 0105 03       		.uleb128 0x3
+ 2771 0106 0E       		.uleb128 0xe
+ 2772 0107 3A       		.uleb128 0x3a
+ 2773 0108 0B       		.uleb128 0xb
+ 2774 0109 3B       		.uleb128 0x3b
+ 2775 010a 05       		.uleb128 0x5
+ 2776 010b 49       		.uleb128 0x49
+ 2777 010c 13       		.uleb128 0x13
+ 2778 010d 00       		.byte	0
+ 2779 010e 00       		.byte	0
+ 2780 010f 18       		.uleb128 0x18
+ 2781 0110 04       		.uleb128 0x4
+ 2782 0111 01       		.byte	0x1
+ 2783 0112 0B       		.uleb128 0xb
+ 2784 0113 0B       		.uleb128 0xb
+ 2785 0114 49       		.uleb128 0x49
+ 2786 0115 13       		.uleb128 0x13
+ 2787 0116 3A       		.uleb128 0x3a
+ 2788 0117 0B       		.uleb128 0xb
+ 2789 0118 3B       		.uleb128 0x3b
+ 2790 0119 0B       		.uleb128 0xb
+ 2791 011a 01       		.uleb128 0x1
+ 2792 011b 13       		.uleb128 0x13
+ 2793 011c 00       		.byte	0
+ 2794 011d 00       		.byte	0
+ 2795 011e 19       		.uleb128 0x19
+ 2796 011f 28       		.uleb128 0x28
+ 2797 0120 00       		.byte	0
+ 2798 0121 03       		.uleb128 0x3
+ 2799 0122 0E       		.uleb128 0xe
+ 2800 0123 1C       		.uleb128 0x1c
+ 2801 0124 0B       		.uleb128 0xb
+ 2802 0125 00       		.byte	0
+ 2803 0126 00       		.byte	0
+ 2804 0127 1A       		.uleb128 0x1a
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 56
+
+
+ 2805 0128 2E       		.uleb128 0x2e
+ 2806 0129 00       		.byte	0
+ 2807 012a 03       		.uleb128 0x3
+ 2808 012b 0E       		.uleb128 0xe
+ 2809 012c 3A       		.uleb128 0x3a
+ 2810 012d 0B       		.uleb128 0xb
+ 2811 012e 3B       		.uleb128 0x3b
+ 2812 012f 0B       		.uleb128 0xb
+ 2813 0130 27       		.uleb128 0x27
+ 2814 0131 19       		.uleb128 0x19
+ 2815 0132 20       		.uleb128 0x20
+ 2816 0133 0B       		.uleb128 0xb
+ 2817 0134 00       		.byte	0
+ 2818 0135 00       		.byte	0
+ 2819 0136 1B       		.uleb128 0x1b
+ 2820 0137 2E       		.uleb128 0x2e
+ 2821 0138 01       		.byte	0x1
+ 2822 0139 3F       		.uleb128 0x3f
+ 2823 013a 19       		.uleb128 0x19
+ 2824 013b 03       		.uleb128 0x3
+ 2825 013c 0E       		.uleb128 0xe
+ 2826 013d 3A       		.uleb128 0x3a
+ 2827 013e 0B       		.uleb128 0xb
+ 2828 013f 3B       		.uleb128 0x3b
+ 2829 0140 0B       		.uleb128 0xb
+ 2830 0141 27       		.uleb128 0x27
+ 2831 0142 19       		.uleb128 0x19
+ 2832 0143 11       		.uleb128 0x11
+ 2833 0144 01       		.uleb128 0x1
+ 2834 0145 12       		.uleb128 0x12
+ 2835 0146 06       		.uleb128 0x6
+ 2836 0147 40       		.uleb128 0x40
+ 2837 0148 18       		.uleb128 0x18
+ 2838 0149 9742     		.uleb128 0x2117
+ 2839 014b 19       		.uleb128 0x19
+ 2840 014c 01       		.uleb128 0x1
+ 2841 014d 13       		.uleb128 0x13
+ 2842 014e 00       		.byte	0
+ 2843 014f 00       		.byte	0
+ 2844 0150 1C       		.uleb128 0x1c
+ 2845 0151 05       		.uleb128 0x5
+ 2846 0152 00       		.byte	0
+ 2847 0153 03       		.uleb128 0x3
+ 2848 0154 0E       		.uleb128 0xe
+ 2849 0155 3A       		.uleb128 0x3a
+ 2850 0156 0B       		.uleb128 0xb
+ 2851 0157 3B       		.uleb128 0x3b
+ 2852 0158 0B       		.uleb128 0xb
+ 2853 0159 49       		.uleb128 0x49
+ 2854 015a 13       		.uleb128 0x13
+ 2855 015b 02       		.uleb128 0x2
+ 2856 015c 17       		.uleb128 0x17
+ 2857 015d 00       		.byte	0
+ 2858 015e 00       		.byte	0
+ 2859 015f 1D       		.uleb128 0x1d
+ 2860 0160 34       		.uleb128 0x34
+ 2861 0161 00       		.byte	0
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 57
+
+
+ 2862 0162 03       		.uleb128 0x3
+ 2863 0163 0E       		.uleb128 0xe
+ 2864 0164 3A       		.uleb128 0x3a
+ 2865 0165 0B       		.uleb128 0xb
+ 2866 0166 3B       		.uleb128 0x3b
+ 2867 0167 0B       		.uleb128 0xb
+ 2868 0168 49       		.uleb128 0x49
+ 2869 0169 13       		.uleb128 0x13
+ 2870 016a 02       		.uleb128 0x2
+ 2871 016b 17       		.uleb128 0x17
+ 2872 016c 00       		.byte	0
+ 2873 016d 00       		.byte	0
+ 2874 016e 1E       		.uleb128 0x1e
+ 2875 016f 898201   		.uleb128 0x4109
+ 2876 0172 00       		.byte	0
+ 2877 0173 11       		.uleb128 0x11
+ 2878 0174 01       		.uleb128 0x1
+ 2879 0175 31       		.uleb128 0x31
+ 2880 0176 13       		.uleb128 0x13
+ 2881 0177 00       		.byte	0
+ 2882 0178 00       		.byte	0
+ 2883 0179 1F       		.uleb128 0x1f
+ 2884 017a 898201   		.uleb128 0x4109
+ 2885 017d 01       		.byte	0x1
+ 2886 017e 11       		.uleb128 0x11
+ 2887 017f 01       		.uleb128 0x1
+ 2888 0180 31       		.uleb128 0x31
+ 2889 0181 13       		.uleb128 0x13
+ 2890 0182 01       		.uleb128 0x1
+ 2891 0183 13       		.uleb128 0x13
+ 2892 0184 00       		.byte	0
+ 2893 0185 00       		.byte	0
+ 2894 0186 20       		.uleb128 0x20
+ 2895 0187 8A8201   		.uleb128 0x410a
+ 2896 018a 00       		.byte	0
+ 2897 018b 02       		.uleb128 0x2
+ 2898 018c 18       		.uleb128 0x18
+ 2899 018d 9142     		.uleb128 0x2111
+ 2900 018f 18       		.uleb128 0x18
+ 2901 0190 00       		.byte	0
+ 2902 0191 00       		.byte	0
+ 2903 0192 21       		.uleb128 0x21
+ 2904 0193 898201   		.uleb128 0x4109
+ 2905 0196 01       		.byte	0x1
+ 2906 0197 11       		.uleb128 0x11
+ 2907 0198 01       		.uleb128 0x1
+ 2908 0199 31       		.uleb128 0x31
+ 2909 019a 13       		.uleb128 0x13
+ 2910 019b 00       		.byte	0
+ 2911 019c 00       		.byte	0
+ 2912 019d 22       		.uleb128 0x22
+ 2913 019e 2E       		.uleb128 0x2e
+ 2914 019f 01       		.byte	0x1
+ 2915 01a0 3F       		.uleb128 0x3f
+ 2916 01a1 19       		.uleb128 0x19
+ 2917 01a2 03       		.uleb128 0x3
+ 2918 01a3 0E       		.uleb128 0xe
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 58
+
+
+ 2919 01a4 3A       		.uleb128 0x3a
+ 2920 01a5 0B       		.uleb128 0xb
+ 2921 01a6 3B       		.uleb128 0x3b
+ 2922 01a7 0B       		.uleb128 0xb
+ 2923 01a8 27       		.uleb128 0x27
+ 2924 01a9 19       		.uleb128 0x19
+ 2925 01aa 49       		.uleb128 0x49
+ 2926 01ab 13       		.uleb128 0x13
+ 2927 01ac 8701     		.uleb128 0x87
+ 2928 01ae 19       		.uleb128 0x19
+ 2929 01af 11       		.uleb128 0x11
+ 2930 01b0 01       		.uleb128 0x1
+ 2931 01b1 12       		.uleb128 0x12
+ 2932 01b2 06       		.uleb128 0x6
+ 2933 01b3 40       		.uleb128 0x40
+ 2934 01b4 18       		.uleb128 0x18
+ 2935 01b5 9742     		.uleb128 0x2117
+ 2936 01b7 19       		.uleb128 0x19
+ 2937 01b8 01       		.uleb128 0x1
+ 2938 01b9 13       		.uleb128 0x13
+ 2939 01ba 00       		.byte	0
+ 2940 01bb 00       		.byte	0
+ 2941 01bc 23       		.uleb128 0x23
+ 2942 01bd 1D       		.uleb128 0x1d
+ 2943 01be 00       		.byte	0
+ 2944 01bf 31       		.uleb128 0x31
+ 2945 01c0 13       		.uleb128 0x13
+ 2946 01c1 11       		.uleb128 0x11
+ 2947 01c2 01       		.uleb128 0x1
+ 2948 01c3 12       		.uleb128 0x12
+ 2949 01c4 06       		.uleb128 0x6
+ 2950 01c5 58       		.uleb128 0x58
+ 2951 01c6 0B       		.uleb128 0xb
+ 2952 01c7 59       		.uleb128 0x59
+ 2953 01c8 0B       		.uleb128 0xb
+ 2954 01c9 00       		.byte	0
+ 2955 01ca 00       		.byte	0
+ 2956 01cb 24       		.uleb128 0x24
+ 2957 01cc 34       		.uleb128 0x34
+ 2958 01cd 00       		.byte	0
+ 2959 01ce 03       		.uleb128 0x3
+ 2960 01cf 0E       		.uleb128 0xe
+ 2961 01d0 3A       		.uleb128 0x3a
+ 2962 01d1 0B       		.uleb128 0xb
+ 2963 01d2 3B       		.uleb128 0x3b
+ 2964 01d3 05       		.uleb128 0x5
+ 2965 01d4 49       		.uleb128 0x49
+ 2966 01d5 13       		.uleb128 0x13
+ 2967 01d6 3F       		.uleb128 0x3f
+ 2968 01d7 19       		.uleb128 0x19
+ 2969 01d8 3C       		.uleb128 0x3c
+ 2970 01d9 19       		.uleb128 0x19
+ 2971 01da 00       		.byte	0
+ 2972 01db 00       		.byte	0
+ 2973 01dc 25       		.uleb128 0x25
+ 2974 01dd 34       		.uleb128 0x34
+ 2975 01de 00       		.byte	0
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 59
+
+
+ 2976 01df 03       		.uleb128 0x3
+ 2977 01e0 0E       		.uleb128 0xe
+ 2978 01e1 3A       		.uleb128 0x3a
+ 2979 01e2 0B       		.uleb128 0xb
+ 2980 01e3 3B       		.uleb128 0x3b
+ 2981 01e4 0B       		.uleb128 0xb
+ 2982 01e5 49       		.uleb128 0x49
+ 2983 01e6 13       		.uleb128 0x13
+ 2984 01e7 3F       		.uleb128 0x3f
+ 2985 01e8 19       		.uleb128 0x19
+ 2986 01e9 3C       		.uleb128 0x3c
+ 2987 01ea 19       		.uleb128 0x19
+ 2988 01eb 00       		.byte	0
+ 2989 01ec 00       		.byte	0
+ 2990 01ed 26       		.uleb128 0x26
+ 2991 01ee 01       		.uleb128 0x1
+ 2992 01ef 01       		.byte	0x1
+ 2993 01f0 49       		.uleb128 0x49
+ 2994 01f1 13       		.uleb128 0x13
+ 2995 01f2 01       		.uleb128 0x1
+ 2996 01f3 13       		.uleb128 0x13
+ 2997 01f4 00       		.byte	0
+ 2998 01f5 00       		.byte	0
+ 2999 01f6 27       		.uleb128 0x27
+ 3000 01f7 21       		.uleb128 0x21
+ 3001 01f8 00       		.byte	0
+ 3002 01f9 49       		.uleb128 0x49
+ 3003 01fa 13       		.uleb128 0x13
+ 3004 01fb 2F       		.uleb128 0x2f
+ 3005 01fc 0B       		.uleb128 0xb
+ 3006 01fd 00       		.byte	0
+ 3007 01fe 00       		.byte	0
+ 3008 01ff 28       		.uleb128 0x28
+ 3009 0200 34       		.uleb128 0x34
+ 3010 0201 00       		.byte	0
+ 3011 0202 03       		.uleb128 0x3
+ 3012 0203 0E       		.uleb128 0xe
+ 3013 0204 3A       		.uleb128 0x3a
+ 3014 0205 0B       		.uleb128 0xb
+ 3015 0206 3B       		.uleb128 0x3b
+ 3016 0207 0B       		.uleb128 0xb
+ 3017 0208 49       		.uleb128 0x49
+ 3018 0209 13       		.uleb128 0x13
+ 3019 020a 3F       		.uleb128 0x3f
+ 3020 020b 19       		.uleb128 0x19
+ 3021 020c 02       		.uleb128 0x2
+ 3022 020d 18       		.uleb128 0x18
+ 3023 020e 00       		.byte	0
+ 3024 020f 00       		.byte	0
+ 3025 0210 29       		.uleb128 0x29
+ 3026 0211 21       		.uleb128 0x21
+ 3027 0212 00       		.byte	0
+ 3028 0213 49       		.uleb128 0x49
+ 3029 0214 13       		.uleb128 0x13
+ 3030 0215 2F       		.uleb128 0x2f
+ 3031 0216 05       		.uleb128 0x5
+ 3032 0217 00       		.byte	0
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 60
+
+
+ 3033 0218 00       		.byte	0
+ 3034 0219 2A       		.uleb128 0x2a
+ 3035 021a 2E       		.uleb128 0x2e
+ 3036 021b 00       		.byte	0
+ 3037 021c 3F       		.uleb128 0x3f
+ 3038 021d 19       		.uleb128 0x19
+ 3039 021e 3C       		.uleb128 0x3c
+ 3040 021f 19       		.uleb128 0x19
+ 3041 0220 6E       		.uleb128 0x6e
+ 3042 0221 0E       		.uleb128 0xe
+ 3043 0222 03       		.uleb128 0x3
+ 3044 0223 0E       		.uleb128 0xe
+ 3045 0224 3A       		.uleb128 0x3a
+ 3046 0225 0B       		.uleb128 0xb
+ 3047 0226 3B       		.uleb128 0x3b
+ 3048 0227 0B       		.uleb128 0xb
+ 3049 0228 00       		.byte	0
+ 3050 0229 00       		.byte	0
+ 3051 022a 2B       		.uleb128 0x2b
+ 3052 022b 2E       		.uleb128 0x2e
+ 3053 022c 00       		.byte	0
+ 3054 022d 3F       		.uleb128 0x3f
+ 3055 022e 19       		.uleb128 0x19
+ 3056 022f 3C       		.uleb128 0x3c
+ 3057 0230 19       		.uleb128 0x19
+ 3058 0231 6E       		.uleb128 0x6e
+ 3059 0232 0E       		.uleb128 0xe
+ 3060 0233 03       		.uleb128 0x3
+ 3061 0234 0E       		.uleb128 0xe
+ 3062 0235 00       		.byte	0
+ 3063 0236 00       		.byte	0
+ 3064 0237 2C       		.uleb128 0x2c
+ 3065 0238 2E       		.uleb128 0x2e
+ 3066 0239 00       		.byte	0
+ 3067 023a 3F       		.uleb128 0x3f
+ 3068 023b 19       		.uleb128 0x19
+ 3069 023c 3C       		.uleb128 0x3c
+ 3070 023d 19       		.uleb128 0x19
+ 3071 023e 6E       		.uleb128 0x6e
+ 3072 023f 0E       		.uleb128 0xe
+ 3073 0240 03       		.uleb128 0x3
+ 3074 0241 0E       		.uleb128 0xe
+ 3075 0242 3A       		.uleb128 0x3a
+ 3076 0243 0B       		.uleb128 0xb
+ 3077 0244 3B       		.uleb128 0x3b
+ 3078 0245 05       		.uleb128 0x5
+ 3079 0246 00       		.byte	0
+ 3080 0247 00       		.byte	0
+ 3081 0248 00       		.byte	0
+ 3082              		.section	.debug_loc,"",%progbits
+ 3083              	.Ldebug_loc0:
+ 3084              	.LLST0:
+ 3085 0000 00000000 		.4byte	.LVL0
+ 3086 0004 09000000 		.4byte	.LVL1-1
+ 3087 0008 0100     		.2byte	0x1
+ 3088 000a 50       		.byte	0x50
+ 3089 000b 09000000 		.4byte	.LVL1-1
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 61
+
+
+ 3090 000f 2C000000 		.4byte	.LFE557
+ 3091 0013 0400     		.2byte	0x4
+ 3092 0015 F3       		.byte	0xf3
+ 3093 0016 01       		.uleb128 0x1
+ 3094 0017 50       		.byte	0x50
+ 3095 0018 9F       		.byte	0x9f
+ 3096 0019 00000000 		.4byte	0
+ 3097 001d 00000000 		.4byte	0
+ 3098              	.LLST1:
+ 3099 0021 00000000 		.4byte	.LVL0
+ 3100 0025 09000000 		.4byte	.LVL1-1
+ 3101 0029 0100     		.2byte	0x1
+ 3102 002b 51       		.byte	0x51
+ 3103 002c 09000000 		.4byte	.LVL1-1
+ 3104 0030 2C000000 		.4byte	.LFE557
+ 3105 0034 0400     		.2byte	0x4
+ 3106 0036 F3       		.byte	0xf3
+ 3107 0037 01       		.uleb128 0x1
+ 3108 0038 51       		.byte	0x51
+ 3109 0039 9F       		.byte	0x9f
+ 3110 003a 00000000 		.4byte	0
+ 3111 003e 00000000 		.4byte	0
+ 3112              	.LLST2:
+ 3113 0042 0C000000 		.4byte	.LVL2
+ 3114 0046 16000000 		.4byte	.LVL3
+ 3115 004a 0100     		.2byte	0x1
+ 3116 004c 50       		.byte	0x50
+ 3117 004d 16000000 		.4byte	.LVL3
+ 3118 0051 19000000 		.4byte	.LVL4-1
+ 3119 0055 0100     		.2byte	0x1
+ 3120 0057 51       		.byte	0x51
+ 3121 0058 19000000 		.4byte	.LVL4-1
+ 3122 005c 28000000 		.4byte	.LVL6
+ 3123 0060 0100     		.2byte	0x1
+ 3124 0062 55       		.byte	0x55
+ 3125 0063 00000000 		.4byte	0
+ 3126 0067 00000000 		.4byte	0
+ 3127              		.section	.debug_aranges,"",%progbits
+ 3128 0000 34000000 		.4byte	0x34
+ 3129 0004 0200     		.2byte	0x2
+ 3130 0006 00000000 		.4byte	.Ldebug_info0
+ 3131 000a 04       		.byte	0x4
+ 3132 000b 00       		.byte	0
+ 3133 000c 0000     		.2byte	0
+ 3134 000e 0000     		.2byte	0
+ 3135 0010 00000000 		.4byte	.LFB557
+ 3136 0014 2C000000 		.4byte	.LFE557-.LFB557
+ 3137 0018 00000000 		.4byte	.LFB558
+ 3138 001c 1E000000 		.4byte	.LFE558-.LFB558
+ 3139 0020 00000000 		.4byte	.LFB559
+ 3140 0024 14000000 		.4byte	.LFE559-.LFB559
+ 3141 0028 00000000 		.4byte	.LFB560
+ 3142 002c 9C000000 		.4byte	.LFE560-.LFB560
+ 3143 0030 00000000 		.4byte	0
+ 3144 0034 00000000 		.4byte	0
+ 3145              		.section	.debug_ranges,"",%progbits
+ 3146              	.Ldebug_ranges0:
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 62
+
+
+ 3147 0000 00000000 		.4byte	.LFB557
+ 3148 0004 2C000000 		.4byte	.LFE557
+ 3149 0008 00000000 		.4byte	.LFB558
+ 3150 000c 1E000000 		.4byte	.LFE558
+ 3151 0010 00000000 		.4byte	.LFB559
+ 3152 0014 14000000 		.4byte	.LFE559
+ 3153 0018 00000000 		.4byte	.LFB560
+ 3154 001c 9C000000 		.4byte	.LFE560
+ 3155 0020 00000000 		.4byte	0
+ 3156 0024 00000000 		.4byte	0
+ 3157              		.section	.debug_line,"",%progbits
+ 3158              	.Ldebug_line0:
+ 3159 0000 DC030000 		.section	.debug_str,"MS",%progbits,1
+ 3159      02006903 
+ 3159      00000201 
+ 3159      FB0E0D00 
+ 3159      01010101 
+ 3160              	.LASF137:
+ 3161 0000 72656C6F 		.ascii	"reloadInputMode\000"
+ 3161      6164496E 
+ 3161      7075744D 
+ 3161      6F646500 
+ 3162              	.LASF172:
+ 3163 0010 43486569 		.ascii	"CHeight\000"
+ 3163      67687400 
+ 3164              	.LASF128:
+ 3165 0018 72756E4D 		.ascii	"runMode\000"
+ 3165      6F646500 
+ 3166              	.LASF147:
+ 3167 0020 46697273 		.ascii	"FirstChar\000"
+ 3167      74436861 
+ 3167      7200
+ 3168              	.LASF238:
+ 3169 002a 70456D77 		.ascii	"pEmwinBuffer\000"
+ 3169      696E4275 
+ 3169      66666572 
+ 3169      00
+ 3170              	.LASF226:
+ 3171 0037 43795F45 		.ascii	"Cy_EINK_Start\000"
+ 3171      494E4B5F 
+ 3171      53746172 
+ 3171      7400
+ 3172              	.LASF66:
+ 3173 0045 666C6173 		.ascii	"flashCtlMainWs3Freq\000"
+ 3173      6843746C 
+ 3173      4D61696E 
+ 3173      57733346 
+ 3173      72657100 
+ 3174              	.LASF88:
+ 3175 0059 6770696F 		.ascii	"gpioPrtCfgInOffset\000"
+ 3175      50727443 
+ 3175      6667496E 
+ 3175      4F666673 
+ 3175      657400
+ 3176              	.LASF106:
+ 3177 006c 6970634C 		.ascii	"ipcLockStatusOffset\000"
+ 3177      6F636B53 
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 63
+
+
+ 3177      74617475 
+ 3177      734F6666 
+ 3177      73657400 
+ 3178              	.LASF32:
+ 3179 0080 63727970 		.ascii	"cryptoVersion\000"
+ 3179      746F5665 
+ 3179      7273696F 
+ 3179      6E00
+ 3180              	.LASF70:
+ 3181 008e 64774368 		.ascii	"dwChCtlPrioPos\000"
+ 3181      43746C50 
+ 3181      72696F50 
+ 3181      6F7300
+ 3182              	.LASF227:
+ 3183 009d 43795F45 		.ascii	"Cy_EINK_Power\000"
+ 3183      494E4B5F 
+ 3183      506F7765 
+ 3183      7200
+ 3184              	.LASF158:
+ 3185 00ab 59506F73 		.ascii	"YPos\000"
+ 3185      00
+ 3186              	.LASF104:
+ 3187 00b0 63707573 		.ascii	"cpussRam2Ctl0\000"
+ 3187      7352616D 
+ 3187      3243746C 
+ 3187      3000
+ 3188              	.LASF41:
+ 3189 00be 63707573 		.ascii	"cpussIpcIrqNr\000"
+ 3189      73497063 
+ 3189      4972714E 
+ 3189      7200
+ 3190              	.LASF3:
+ 3191 00cc 5F5F7569 		.ascii	"__uint8_t\000"
+ 3191      6E74385F 
+ 3191      7400
+ 3192              	.LASF221:
+ 3193 00d6 4755495F 		.ascii	"GUI_SetColor\000"
+ 3193      53657443 
+ 3193      6F6C6F72 
+ 3193      00
+ 3194              	.LASF43:
+ 3195 00e3 63707573 		.ascii	"cpussFlashPaSize\000"
+ 3195      73466C61 
+ 3195      73685061 
+ 3195      53697A65 
+ 3195      00
+ 3196              	.LASF92:
+ 3197 00f4 63707573 		.ascii	"cpussCm4ClockCtlOffset\000"
+ 3197      73436D34 
+ 3197      436C6F63 
+ 3197      6B43746C 
+ 3197      4F666673 
+ 3198              	.LASF129:
+ 3199 010b 636F756E 		.ascii	"countDirection\000"
+ 3199      74446972 
+ 3199      65637469 
+ 3199      6F6E00
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 64
+
+
+ 3200              	.LASF215:
+ 3201 011a 4755495F 		.ascii	"GUI_Font16_1\000"
+ 3201      466F6E74 
+ 3201      31365F31 
+ 3201      00
+ 3202              	.LASF141:
+ 3203 0127 73746F70 		.ascii	"stopInputMode\000"
+ 3203      496E7075 
+ 3203      744D6F64 
+ 3203      6500
+ 3204              	.LASF21:
+ 3205 0135 63707573 		.ascii	"cpussBase\000"
+ 3205      73426173 
+ 3205      6500
+ 3206              	.LASF165:
+ 3207 013f 4755495F 		.ascii	"GUI_FONT_PROP_EXT\000"
+ 3207      464F4E54 
+ 3207      5F50524F 
+ 3207      505F4558 
+ 3207      5400
+ 3208              	.LASF50:
+ 3209 0151 70657269 		.ascii	"periClockNr\000"
+ 3209      436C6F63 
+ 3209      6B4E7200 
+ 3210              	.LASF217:
+ 3211 015d 76656374 		.ascii	"vectorSinus\000"
+ 3211      6F725369 
+ 3211      6E757300 
+ 3212              	.LASF171:
+ 3213 0169 4C486569 		.ascii	"LHeight\000"
+ 3213      67687400 
+ 3214              	.LASF209:
+ 3215 0171 436C6561 		.ascii	"ClearScreen\000"
+ 3215      72536372 
+ 3215      65656E00 
+ 3216              	.LASF127:
+ 3217 017d 636C6F63 		.ascii	"clockPrescaler\000"
+ 3217      6B507265 
+ 3217      7363616C 
+ 3217      657200
+ 3218              	.LASF164:
+ 3219 018c 704E6578 		.ascii	"pNext\000"
+ 3219      7400
+ 3220              	.LASF74:
+ 3221 0192 70657269 		.ascii	"periTrCmdOffset\000"
+ 3221      5472436D 
+ 3221      644F6666 
+ 3221      73657400 
+ 3222              	.LASF98:
+ 3223 01a2 63707573 		.ascii	"cpussSysTickCtlOffset\000"
+ 3223      73537973 
+ 3223      5469636B 
+ 3223      43746C4F 
+ 3223      66667365 
+ 3224              	.LASF118:
+ 3225 01b8 74784275 		.ascii	"txBuf\000"
+ 3225      6600
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 65
+
+
+ 3226              	.LASF194:
+ 3227 01be 4755495F 		.ascii	"GUI_ISINFONT\000"
+ 3227      4953494E 
+ 3227      464F4E54 
+ 3227      00
+ 3228              	.LASF186:
+ 3229 01cb 70664765 		.ascii	"pfGetCharInfo\000"
+ 3229      74436861 
+ 3229      72496E66 
+ 3229      6F00
+ 3230              	.LASF99:
+ 3231 01d9 63707573 		.ascii	"cpussCm0NmiCtlOffset\000"
+ 3231      73436D30 
+ 3231      4E6D6943 
+ 3231      746C4F66 
+ 3231      66736574 
+ 3232              	.LASF59:
+ 3233 01ee 666C6173 		.ascii	"flashPipeRequired\000"
+ 3233      68506970 
+ 3233      65526571 
+ 3233      75697265 
+ 3233      6400
+ 3234              	.LASF24:
+ 3235 0200 75646242 		.ascii	"udbBase\000"
+ 3235      61736500 
+ 3236              	.LASF63:
+ 3237 0208 666C6173 		.ascii	"flashCtlMainWs0Freq\000"
+ 3237      6843746C 
+ 3237      4D61696E 
+ 3237      57733046 
+ 3237      72657100 
+ 3238              	.LASF15:
+ 3239 021c 696E7431 		.ascii	"int16_t\000"
+ 3239      365F7400 
+ 3240              	.LASF170:
+ 3241 0224 42617365 		.ascii	"Baseline\000"
+ 3241      6C696E65 
+ 3241      00
+ 3242              	.LASF145:
+ 3243 022d 63795F73 		.ascii	"cy_stc_tcpwm_counter_config_t\000"
+ 3243      74635F74 
+ 3243      6370776D 
+ 3243      5F636F75 
+ 3243      6E746572 
+ 3244              	.LASF124:
+ 3245 024b 63795F73 		.ascii	"cy_stc_scb_spi_context\000"
+ 3245      74635F73 
+ 3245      63625F73 
+ 3245      70695F63 
+ 3245      6F6E7465 
+ 3246              	.LASF79:
+ 3247 0262 70657269 		.ascii	"periDivCmdTypeSelPos\000"
+ 3247      44697643 
+ 3247      6D645479 
+ 3247      70655365 
+ 3247      6C506F73 
+ 3248              	.LASF157:
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 66
+
+
+ 3249 0277 58506F73 		.ascii	"XPos\000"
+ 3249      00
+ 3250              	.LASF148:
+ 3251 027c 4C617374 		.ascii	"LastChar\000"
+ 3251      43686172 
+ 3251      00
+ 3252              	.LASF96:
+ 3253 0285 63707573 		.ascii	"cpussTrimRamCtlOffset\000"
+ 3253      73547269 
+ 3253      6D52616D 
+ 3253      43746C4F 
+ 3253      66667365 
+ 3254              	.LASF12:
+ 3255 029b 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 3255      206C6F6E 
+ 3255      6720756E 
+ 3255      7369676E 
+ 3255      65642069 
+ 3256              	.LASF210:
+ 3257 02b2 57616974 		.ascii	"WaitforSwitchPressAndRelease\000"
+ 3257      666F7253 
+ 3257      77697463 
+ 3257      68507265 
+ 3257      7373416E 
+ 3258              	.LASF184:
+ 3259 02cf 70664765 		.ascii	"pfGetFontInfo\000"
+ 3259      74466F6E 
+ 3259      74496E66 
+ 3259      6F00
+ 3260              	.LASF113:
+ 3261 02dd 63795F63 		.ascii	"cy_cb_scb_spi_handle_events_t\000"
+ 3261      625F7363 
+ 3261      625F7370 
+ 3261      695F6861 
+ 3261      6E646C65 
+ 3262              	.LASF26:
+ 3263 02fb 6873696F 		.ascii	"hsiomBase\000"
+ 3263      6D426173 
+ 3263      6500
+ 3264              	.LASF160:
+ 3265 0305 4755495F 		.ascii	"GUI_FONT_PROP\000"
+ 3265      464F4E54 
+ 3265      5F50524F 
+ 3265      5000
+ 3266              	.LASF159:
+ 3267 0313 4755495F 		.ascii	"GUI_CHARINFO_EXT\000"
+ 3267      43484152 
+ 3267      494E464F 
+ 3267      5F455854 
+ 3267      00
+ 3268              	.LASF56:
+ 3269 0324 70726F74 		.ascii	"protBusMasterMask\000"
+ 3269      4275734D 
+ 3269      61737465 
+ 3269      724D6173 
+ 3269      6B00
+ 3270              	.LASF57:
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 67
+
+
+ 3271 0336 63727970 		.ascii	"cryptoMemSize\000"
+ 3271      746F4D65 
+ 3271      6D53697A 
+ 3271      6500
+ 3272              	.LASF240:
+ 3273 0344 6D656D63 		.ascii	"memcpy\000"
+ 3273      707900
+ 3274              	.LASF111:
+ 3275 034b 75696E74 		.ascii	"uint8\000"
+ 3275      3800
+ 3276              	.LASF55:
+ 3277 0351 73797350 		.ascii	"sysPmSimoPresent\000"
+ 3277      6D53696D 
+ 3277      6F507265 
+ 3277      73656E74 
+ 3277      00
+ 3278              	.LASF16:
+ 3279 0362 75696E74 		.ascii	"uint16_t\000"
+ 3279      31365F74 
+ 3279      00
+ 3280              	.LASF218:
+ 3281 036b 696D6167 		.ascii	"imageBufferCache\000"
+ 3281      65427566 
+ 3281      66657243 
+ 3281      61636865 
+ 3281      00
+ 3282              	.LASF110:
+ 3283 037c 646F7562 		.ascii	"double\000"
+ 3283      6C6500
+ 3284              	.LASF84:
+ 3285 0383 70657269 		.ascii	"periDiv16_5CtlOffset\000"
+ 3285      44697631 
+ 3285      365F3543 
+ 3285      746C4F66 
+ 3285      66736574 
+ 3286              	.LASF48:
+ 3287 0398 73727373 		.ascii	"srssNumPll\000"
+ 3287      4E756D50 
+ 3287      6C6C00
+ 3288              	.LASF198:
+ 3289 03a3 7050726F 		.ascii	"pProp\000"
+ 3289      7000
+ 3290              	.LASF135:
+ 3291 03a9 63617074 		.ascii	"captureInputMode\000"
+ 3291      75726549 
+ 3291      6E707574 
+ 3291      4D6F6465 
+ 3291      00
+ 3292              	.LASF82:
+ 3293 03ba 70657269 		.ascii	"periDiv8CtlOffset\000"
+ 3293      44697638 
+ 3293      43746C4F 
+ 3293      66667365 
+ 3293      7400
+ 3294              	.LASF195:
+ 3295 03cc 4755495F 		.ascii	"GUI_GETCHARINFO\000"
+ 3295      47455443 
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 68
+
+
+ 3295      48415249 
+ 3295      4E464F00 
+ 3296              	.LASF181:
+ 3297 03dc 4755495F 		.ascii	"GUI_FONT\000"
+ 3297      464F4E54 
+ 3297      00
+ 3298              	.LASF89:
+ 3299 03e5 6770696F 		.ascii	"gpioPrtCfgOutOffset\000"
+ 3299      50727443 
+ 3299      66674F75 
+ 3299      744F6666 
+ 3299      73657400 
+ 3300              	.LASF175:
+ 3301 03f9 74475549 		.ascii	"tGUI_GetLineLen\000"
+ 3301      5F476574 
+ 3301      4C696E65 
+ 3301      4C656E00 
+ 3302              	.LASF146:
+ 3303 0409 4755495F 		.ascii	"GUI_FONT_TRANSLIST\000"
+ 3303      464F4E54 
+ 3303      5F545241 
+ 3303      4E534C49 
+ 3303      535400
+ 3304              	.LASF154:
+ 3305 041c 70446174 		.ascii	"pData\000"
+ 3305      6100
+ 3306              	.LASF23:
+ 3307 0422 70657269 		.ascii	"periBase\000"
+ 3307      42617365 
+ 3307      00
+ 3308              	.LASF9:
+ 3309 042b 5F5F7569 		.ascii	"__uint32_t\000"
+ 3309      6E743332 
+ 3309      5F7400
+ 3310              	.LASF52:
+ 3311 0436 70617373 		.ascii	"passSarChannels\000"
+ 3311      53617243 
+ 3311      68616E6E 
+ 3311      656C7300 
+ 3312              	.LASF115:
+ 3313 0446 72784275 		.ascii	"rxBuf\000"
+ 3313      6600
+ 3314              	.LASF203:
+ 3315 044c 43595F45 		.ascii	"CY_EINK_FULL_4STAGE\000"
+ 3315      494E4B5F 
+ 3315      46554C4C 
+ 3315      5F345354 
+ 3315      41474500 
+ 3316              	.LASF216:
+ 3317 0460 4755495F 		.ascii	"GUI_Font32B_1\000"
+ 3317      466F6E74 
+ 3317      3332425F 
+ 3317      3100
+ 3318              	.LASF4:
+ 3319 046e 5F5F696E 		.ascii	"__int16_t\000"
+ 3319      7431365F 
+ 3319      7400
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 69
+
+
+ 3320              	.LASF117:
+ 3321 0478 72784275 		.ascii	"rxBufIdx\000"
+ 3321      66496478 
+ 3321      00
+ 3322              	.LASF202:
+ 3323 0481 43595F45 		.ascii	"CY_EINK_PARTIAL\000"
+ 3323      494E4B5F 
+ 3323      50415254 
+ 3323      49414C00 
+ 3324              	.LASF80:
+ 3325 0491 70657269 		.ascii	"periDivCmdPaDivSelPos\000"
+ 3325      44697643 
+ 3325      6D645061 
+ 3325      44697653 
+ 3325      656C506F 
+ 3326              	.LASF11:
+ 3327 04a7 6C6F6E67 		.ascii	"long long int\000"
+ 3327      206C6F6E 
+ 3327      6720696E 
+ 3327      7400
+ 3328              	.LASF95:
+ 3329 04b5 63707573 		.ascii	"cpussCm4PwrCtlOffset\000"
+ 3329      73436D34 
+ 3329      50777243 
+ 3329      746C4F66 
+ 3329      66736574 
+ 3330              	.LASF119:
+ 3331 04ca 74784275 		.ascii	"txBufSize\000"
+ 3331      6653697A 
+ 3331      6500
+ 3332              	.LASF90:
+ 3333 04d4 6770696F 		.ascii	"gpioPrtCfgSioOffset\000"
+ 3333      50727443 
+ 3333      66675369 
+ 3333      6F4F6666 
+ 3333      73657400 
+ 3334              	.LASF94:
+ 3335 04e8 63707573 		.ascii	"cpussCm0StatusOffset\000"
+ 3335      73436D30 
+ 3335      53746174 
+ 3335      75734F66 
+ 3335      66736574 
+ 3336              	.LASF13:
+ 3337 04fd 756E7369 		.ascii	"unsigned int\000"
+ 3337      676E6564 
+ 3337      20696E74 
+ 3337      00
+ 3338              	.LASF75:
+ 3339 050a 70657269 		.ascii	"periTrCmdGrSelMsk\000"
+ 3339      5472436D 
+ 3339      64477253 
+ 3339      656C4D73 
+ 3339      6B00
+ 3340              	.LASF10:
+ 3341 051c 6C6F6E67 		.ascii	"long unsigned int\000"
+ 3341      20756E73 
+ 3341      69676E65 
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 70
+
+
+ 3341      6420696E 
+ 3341      7400
+ 3342              	.LASF77:
+ 3343 052e 70657269 		.ascii	"periTrGrSize\000"
+ 3343      54724772 
+ 3343      53697A65 
+ 3343      00
+ 3344              	.LASF40:
+ 3345 053b 63707573 		.ascii	"cpussIpcNr\000"
+ 3345      73497063 
+ 3345      4E7200
+ 3346              	.LASF136:
+ 3347 0546 63617074 		.ascii	"captureInput\000"
+ 3347      75726549 
+ 3347      6E707574 
+ 3347      00
+ 3348              	.LASF42:
+ 3349 0553 63707573 		.ascii	"cpussDwChNr\000"
+ 3349      73447743 
+ 3349      684E7200 
+ 3350              	.LASF192:
+ 3351 055f 4755495F 		.ascii	"GUI_GETCHARDISTX\000"
+ 3351      47455443 
+ 3351      48415244 
+ 3351      49535458 
+ 3351      00
+ 3352              	.LASF65:
+ 3353 0570 666C6173 		.ascii	"flashCtlMainWs2Freq\000"
+ 3353      6843746C 
+ 3353      4D61696E 
+ 3353      57733246 
+ 3353      72657100 
+ 3354              	.LASF76:
+ 3355 0584 70657269 		.ascii	"periTrGrOffset\000"
+ 3355      54724772 
+ 3355      4F666673 
+ 3355      657400
+ 3356              	.LASF103:
+ 3357 0593 63707573 		.ascii	"cpussRam1Ctl0\000"
+ 3357      7352616D 
+ 3357      3143746C 
+ 3357      3000
+ 3358              	.LASF121:
+ 3359 05a1 63624576 		.ascii	"cbEvents\000"
+ 3359      656E7473 
+ 3359      00
+ 3360              	.LASF87:
+ 3361 05aa 6770696F 		.ascii	"gpioPrtCfgOffset\000"
+ 3361      50727443 
+ 3361      66674F66 
+ 3361      66736574 
+ 3361      00
+ 3362              	.LASF204:
+ 3363 05bb 43595F45 		.ascii	"CY_EINK_FULL_2STAGE\000"
+ 3363      494E4B5F 
+ 3363      46554C4C 
+ 3363      5F325354 
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 71
+
+
+ 3363      41474500 
+ 3364              	.LASF183:
+ 3365 05cf 70664765 		.ascii	"pfGetCharDistX\000"
+ 3365      74436861 
+ 3365      72446973 
+ 3365      745800
+ 3366              	.LASF35:
+ 3367 05de 6770696F 		.ascii	"gpioVersion\000"
+ 3367      56657273 
+ 3367      696F6E00 
+ 3368              	.LASF201:
+ 3369 05ea 63795F65 		.ascii	"cy_eink_frame_t\000"
+ 3369      696E6B5F 
+ 3369      6672616D 
+ 3369      655F7400 
+ 3370              	.LASF173:
+ 3371 05fa 4755495F 		.ascii	"GUI_FONTINFO\000"
+ 3371      464F4E54 
+ 3371      494E464F 
+ 3371      00
+ 3372              	.LASF107:
+ 3373 0607 63795F73 		.ascii	"cy_stc_device_t\000"
+ 3373      74635F64 
+ 3373      65766963 
+ 3373      655F7400 
+ 3374              	.LASF191:
+ 3375 0617 4755495F 		.ascii	"GUI_DISPCHAR\000"
+ 3375      44495350 
+ 3375      43484152 
+ 3375      00
+ 3376              	.LASF0:
+ 3377 0624 73686F72 		.ascii	"short int\000"
+ 3377      7420696E 
+ 3377      7400
+ 3378              	.LASF7:
+ 3379 062e 5F5F696E 		.ascii	"__int32_t\000"
+ 3379      7433325F 
+ 3379      7400
+ 3380              	.LASF233:
+ 3381 0638 4755495F 		.ascii	"GUI_DispStringAt\000"
+ 3381      44697370 
+ 3381      53747269 
+ 3381      6E674174 
+ 3381      00
+ 3382              	.LASF25:
+ 3383 0649 70726F74 		.ascii	"protBase\000"
+ 3383      42617365 
+ 3383      00
+ 3384              	.LASF143:
+ 3385 0652 636F756E 		.ascii	"countInputMode\000"
+ 3385      74496E70 
+ 3385      75744D6F 
+ 3385      646500
+ 3386              	.LASF91:
+ 3387 0661 63707573 		.ascii	"cpussCm0ClockCtlOffset\000"
+ 3387      73436D30 
+ 3387      436C6F63 
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 72
+
+
+ 3387      6B43746C 
+ 3387      4F666673 
+ 3388              	.LASF182:
+ 3389 0678 70664469 		.ascii	"pfDispChar\000"
+ 3389      73704368 
+ 3389      617200
+ 3390              	.LASF30:
+ 3391 0683 63727970 		.ascii	"cryptoBase\000"
+ 3391      746F4261 
+ 3391      736500
+ 3392              	.LASF223:
+ 3393 068e 4755495F 		.ascii	"GUI_Clear\000"
+ 3393      436C6561 
+ 3393      7200
+ 3394              	.LASF38:
+ 3395 0698 70657269 		.ascii	"periVersion\000"
+ 3395      56657273 
+ 3395      696F6E00 
+ 3396              	.LASF231:
+ 3397 06a4 4755495F 		.ascii	"GUI_SetFont\000"
+ 3397      53657446 
+ 3397      6F6E7400 
+ 3398              	.LASF31:
+ 3399 06b0 63707573 		.ascii	"cpussVersion\000"
+ 3399      73566572 
+ 3399      73696F6E 
+ 3399      00
+ 3400              	.LASF19:
+ 3401 06bd 73697A65 		.ascii	"sizetype\000"
+ 3401      74797065 
+ 3401      00
+ 3402              	.LASF193:
+ 3403 06c6 4755495F 		.ascii	"GUI_GETFONTINFO\000"
+ 3403      47455446 
+ 3403      4F4E5449 
+ 3403      4E464F00 
+ 3404              	.LASF68:
+ 3405 06d6 64774368 		.ascii	"dwChOffset\000"
+ 3405      4F666673 
+ 3405      657400
+ 3406              	.LASF20:
+ 3407 06e1 6C6F6E67 		.ascii	"long double\000"
+ 3407      20646F75 
+ 3407      626C6500 
+ 3408              	.LASF28:
+ 3409 06ed 70617373 		.ascii	"passBase\000"
+ 3409      42617365 
+ 3409      00
+ 3410              	.LASF156:
+ 3411 06f6 5953697A 		.ascii	"YSize\000"
+ 3411      6500
+ 3412              	.LASF214:
+ 3413 06fc 43595F45 		.ascii	"CY_EINK_Timer_config\000"
+ 3413      494E4B5F 
+ 3413      54696D65 
+ 3413      725F636F 
+ 3413      6E666967 
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 73
+
+
+ 3414              	.LASF153:
+ 3415 0711 42797465 		.ascii	"BytesPerLine\000"
+ 3415      73506572 
+ 3415      4C696E65 
+ 3415      00
+ 3416              	.LASF116:
+ 3417 071e 72784275 		.ascii	"rxBufSize\000"
+ 3417      6653697A 
+ 3417      6500
+ 3418              	.LASF81:
+ 3419 0728 70657269 		.ascii	"periDivCmdPaTypeSelPos\000"
+ 3419      44697643 
+ 3419      6D645061 
+ 3419      54797065 
+ 3419      53656C50 
+ 3420              	.LASF53:
+ 3421 073f 65704D6F 		.ascii	"epMonitorNr\000"
+ 3421      6E69746F 
+ 3421      724E7200 
+ 3422              	.LASF229:
+ 3423 074b 4755495F 		.ascii	"GUI_DrawRect\000"
+ 3423      44726177 
+ 3423      52656374 
+ 3423      00
+ 3424              	.LASF39:
+ 3425 0758 70726F74 		.ascii	"protVersion\000"
+ 3425      56657273 
+ 3425      696F6E00 
+ 3426              	.LASF72:
+ 3427 0764 64775374 		.ascii	"dwStatusChIdxPos\000"
+ 3427      61747573 
+ 3427      43684964 
+ 3427      78506F73 
+ 3427      00
+ 3428              	.LASF200:
+ 3429 0775 70765F65 		.ascii	"pv_eink_frame_data_t\000"
+ 3429      696E6B5F 
+ 3429      6672616D 
+ 3429      655F6461 
+ 3429      74615F74 
+ 3430              	.LASF54:
+ 3431 078a 75646250 		.ascii	"udbPresent\000"
+ 3431      72657365 
+ 3431      6E7400
+ 3432              	.LASF174:
+ 3433 0795 74475549 		.ascii	"tGUI_GetLineDistX\000"
+ 3433      5F476574 
+ 3433      4C696E65 
+ 3433      44697374 
+ 3433      5800
+ 3434              	.LASF199:
+ 3435 07a7 7050726F 		.ascii	"pPropExt\000"
+ 3435      70457874 
+ 3435      00
+ 3436              	.LASF34:
+ 3437 07b0 666C6173 		.ascii	"flashcVersion\000"
+ 3437      68635665 
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 74
+
+
+ 3437      7273696F 
+ 3437      6E00
+ 3438              	.LASF51:
+ 3439 07be 736D6966 		.ascii	"smifDeviceNr\000"
+ 3439      44657669 
+ 3439      63654E72 
+ 3439      00
+ 3440              	.LASF237:
+ 3441 07cb 5F5F656E 		.ascii	"__enable_irq\000"
+ 3441      61626C65 
+ 3441      5F697271 
+ 3441      00
+ 3442              	.LASF234:
+ 3443 07d8 474E5520 		.ascii	"GNU C11 5.4.1 20160609 (release) [ARM/embedded-5-br"
+ 3443      43313120 
+ 3443      352E342E 
+ 3443      31203230 
+ 3443      31363036 
+ 3444 080b 616E6368 		.ascii	"anch revision 237715] -mcpu=cortex-m4 -mfloat-abi=s"
+ 3444      20726576 
+ 3444      6973696F 
+ 3444      6E203233 
+ 3444      37373135 
+ 3445 083e 6F667466 		.ascii	"oftfp -mfpu=fpv4-sp-d16 -mthumb -g -Og -ffunction-s"
+ 3445      70202D6D 
+ 3445      6670753D 
+ 3445      66707634 
+ 3445      2D73702D 
+ 3446 0871 65637469 		.ascii	"ections -ffat-lto-objects\000"
+ 3446      6F6E7320 
+ 3446      2D666661 
+ 3446      742D6C74 
+ 3446      6F2D6F62 
+ 3447              	.LASF109:
+ 3448 088b 666C6F61 		.ascii	"float\000"
+ 3448      7400
+ 3449              	.LASF73:
+ 3450 0891 64775374 		.ascii	"dwStatusChIdxMsk\000"
+ 3450      61747573 
+ 3450      43684964 
+ 3450      784D736B 
+ 3450      00
+ 3451              	.LASF205:
+ 3452 08a2 63795F65 		.ascii	"cy_eink_update_t\000"
+ 3452      696E6B5F 
+ 3452      75706461 
+ 3452      74655F74 
+ 3452      00
+ 3453              	.LASF212:
+ 3454 08b3 63795F64 		.ascii	"cy_device\000"
+ 3454      65766963 
+ 3454      6500
+ 3455              	.LASF101:
+ 3456 08bd 63707573 		.ascii	"cpussRomCtl\000"
+ 3456      73526F6D 
+ 3456      43746C00 
+ 3457              	.LASF166:
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 75
+
+
+ 3458 08c9 70547261 		.ascii	"pTransData\000"
+ 3458      6E734461 
+ 3458      746100
+ 3459              	.LASF71:
+ 3460 08d4 64774368 		.ascii	"dwChCtlPreemptablePos\000"
+ 3460      43746C50 
+ 3460      7265656D 
+ 3460      70746162 
+ 3460      6C65506F 
+ 3461              	.LASF161:
+ 3462 08ea 46697273 		.ascii	"First\000"
+ 3462      7400
+ 3463              	.LASF196:
+ 3464 08f0 70466F6E 		.ascii	"pFontData\000"
+ 3464      74446174 
+ 3464      6100
+ 3465              	.LASF176:
+ 3466 08fa 74474C5F 		.ascii	"tGL_DispLine\000"
+ 3466      44697370 
+ 3466      4C696E65 
+ 3466      00
+ 3467              	.LASF139:
+ 3468 0907 73746172 		.ascii	"startInputMode\000"
+ 3468      74496E70 
+ 3468      75744D6F 
+ 3468      646500
+ 3469              	.LASF17:
+ 3470 0916 696E7433 		.ascii	"int32_t\000"
+ 3470      325F7400 
+ 3471              	.LASF2:
+ 3472 091e 756E7369 		.ascii	"unsigned char\000"
+ 3472      676E6564 
+ 3472      20636861 
+ 3472      7200
+ 3473              	.LASF152:
+ 3474 092c 58446973 		.ascii	"XDist\000"
+ 3474      7400
+ 3475              	.LASF67:
+ 3476 0932 666C6173 		.ascii	"flashCtlMainWs4Freq\000"
+ 3476      6843746C 
+ 3476      4D61696E 
+ 3476      57733446 
+ 3476      72657100 
+ 3477              	.LASF211:
+ 3478 0946 49544D5F 		.ascii	"ITM_RxBuffer\000"
+ 3478      52784275 
+ 3478      66666572 
+ 3478      00
+ 3479              	.LASF85:
+ 3480 0953 70657269 		.ascii	"periDiv24_5CtlOffset\000"
+ 3480      44697632 
+ 3480      345F3543 
+ 3480      746C4F66 
+ 3480      66736574 
+ 3481              	.LASF133:
+ 3482 0968 656E6162 		.ascii	"enableCompareSwap\000"
+ 3482      6C65436F 
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 76
+
+
+ 3482      6D706172 
+ 3482      65537761 
+ 3482      7000
+ 3483              	.LASF177:
+ 3484 097a 70664765 		.ascii	"pfGetLineDistX\000"
+ 3484      744C696E 
+ 3484      65446973 
+ 3484      745800
+ 3485              	.LASF102:
+ 3486 0989 63707573 		.ascii	"cpussRam0Ctl0\000"
+ 3486      7352616D 
+ 3486      3043746C 
+ 3486      3000
+ 3487              	.LASF114:
+ 3488 0997 73746174 		.ascii	"status\000"
+ 3488      757300
+ 3489              	.LASF37:
+ 3490 099e 69706356 		.ascii	"ipcVersion\000"
+ 3490      65727369 
+ 3490      6F6E00
+ 3491              	.LASF155:
+ 3492 09a9 4755495F 		.ascii	"GUI_CHARINFO\000"
+ 3492      43484152 
+ 3492      494E464F 
+ 3492      00
+ 3493              	.LASF78:
+ 3494 09b6 70657269 		.ascii	"periDivCmdDivSelMsk\000"
+ 3494      44697643 
+ 3494      6D644469 
+ 3494      7653656C 
+ 3494      4D736B00 
+ 3495              	.LASF120:
+ 3496 09ca 74784275 		.ascii	"txBufIdx\000"
+ 3496      66496478 
+ 3496      00
+ 3497              	.LASF224:
+ 3498 09d3 53746174 		.ascii	"Status_SW2_Read\000"
+ 3498      75735F53 
+ 3498      57325F52 
+ 3498      65616400 
+ 3499              	.LASF22:
+ 3500 09e3 666C6173 		.ascii	"flashcBase\000"
+ 3500      68634261 
+ 3500      736500
+ 3501              	.LASF190:
+ 3502 09ee 594D6167 		.ascii	"YMag\000"
+ 3502      00
+ 3503              	.LASF49:
+ 3504 09f3 73727373 		.ascii	"srssNumHfroot\000"
+ 3504      4E756D48 
+ 3504      66726F6F 
+ 3504      7400
+ 3505              	.LASF222:
+ 3506 0a01 4755495F 		.ascii	"GUI_SetBkColor\000"
+ 3506      53657442 
+ 3506      6B436F6C 
+ 3506      6F7200
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 77
+
+
+ 3507              	.LASF62:
+ 3508 0a10 666C6173 		.ascii	"flashEraseDelay\000"
+ 3508      68457261 
+ 3508      73654465 
+ 3508      6C617900 
+ 3509              	.LASF45:
+ 3510 0a20 63707573 		.ascii	"cpussFmIrq\000"
+ 3510      73466D49 
+ 3510      727100
+ 3511              	.LASF163:
+ 3512 0a2b 70614368 		.ascii	"paCharInfo\000"
+ 3512      6172496E 
+ 3512      666F00
+ 3513              	.LASF125:
+ 3514 0a36 63795F73 		.ascii	"cy_stc_tcpwm_counter_config\000"
+ 3514      74635F74 
+ 3514      6370776D 
+ 3514      5F636F75 
+ 3514      6E746572 
+ 3515              	.LASF208:
+ 3516 0a52 55706461 		.ascii	"UpdateDisplay\000"
+ 3516      74654469 
+ 3516      73706C61 
+ 3516      7900
+ 3517              	.LASF100:
+ 3518 0a60 63707573 		.ascii	"cpussCm4NmiCtlOffset\000"
+ 3518      73436D34 
+ 3518      4E6D6943 
+ 3518      746C4F66 
+ 3518      66736574 
+ 3519              	.LASF123:
+ 3520 0a75 63795F73 		.ascii	"cy_stc_scb_spi_context_t\000"
+ 3520      74635F73 
+ 3520      63625F73 
+ 3520      70695F63 
+ 3520      6F6E7465 
+ 3521              	.LASF179:
+ 3522 0a8e 70664469 		.ascii	"pfDispLine\000"
+ 3522      73704C69 
+ 3522      6E6500
+ 3523              	.LASF131:
+ 3524 0a99 636F6D70 		.ascii	"compare0\000"
+ 3524      61726530 
+ 3524      00
+ 3525              	.LASF132:
+ 3526 0aa2 636F6D70 		.ascii	"compare1\000"
+ 3526      61726531 
+ 3526      00
+ 3527              	.LASF144:
+ 3528 0aab 636F756E 		.ascii	"countInput\000"
+ 3528      74496E70 
+ 3528      757400
+ 3529              	.LASF108:
+ 3530 0ab6 63686172 		.ascii	"char\000"
+ 3530      00
+ 3531              	.LASF64:
+ 3532 0abb 666C6173 		.ascii	"flashCtlMainWs1Freq\000"
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 78
+
+
+ 3532      6843746C 
+ 3532      4D61696E 
+ 3532      57733146 
+ 3532      72657100 
+ 3533              	.LASF180:
+ 3534 0acf 74475549 		.ascii	"tGUI_ENC_APIList\000"
+ 3534      5F454E43 
+ 3534      5F415049 
+ 3534      4C697374 
+ 3534      00
+ 3535              	.LASF5:
+ 3536 0ae0 5F5F7569 		.ascii	"__uint16_t\000"
+ 3536      6E743136 
+ 3536      5F7400
+ 3537              	.LASF188:
+ 3538 0aeb 59446973 		.ascii	"YDist\000"
+ 3538      7400
+ 3539              	.LASF83:
+ 3540 0af1 70657269 		.ascii	"periDiv16CtlOffset\000"
+ 3540      44697631 
+ 3540      3643746C 
+ 3540      4F666673 
+ 3540      657400
+ 3541              	.LASF169:
+ 3542 0b04 466C6167 		.ascii	"Flags\000"
+ 3542      7300
+ 3543              	.LASF220:
+ 3544 0b0a 43795F45 		.ascii	"Cy_EINK_ShowFrame\000"
+ 3544      494E4B5F 
+ 3544      53686F77 
+ 3544      4672616D 
+ 3544      6500
+ 3545              	.LASF33:
+ 3546 0b1c 64775665 		.ascii	"dwVersion\000"
+ 3546      7273696F 
+ 3546      6E00
+ 3547              	.LASF126:
+ 3548 0b26 70657269 		.ascii	"period\000"
+ 3548      6F6400
+ 3549              	.LASF36:
+ 3550 0b2d 6873696F 		.ascii	"hsiomVersion\000"
+ 3550      6D566572 
+ 3550      73696F6E 
+ 3550      00
+ 3551              	.LASF187:
+ 3552 0b3a 70616645 		.ascii	"pafEncode\000"
+ 3552      6E636F64 
+ 3552      6500
+ 3553              	.LASF130:
+ 3554 0b44 636F6D70 		.ascii	"compareOrCapture\000"
+ 3554      6172654F 
+ 3554      72436170 
+ 3554      74757265 
+ 3554      00
+ 3555              	.LASF134:
+ 3556 0b55 696E7465 		.ascii	"interruptSources\000"
+ 3556      72727570 
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 79
+
+
+ 3556      74536F75 
+ 3556      72636573 
+ 3556      00
+ 3557              	.LASF138:
+ 3558 0b66 72656C6F 		.ascii	"reloadInput\000"
+ 3558      6164496E 
+ 3558      70757400 
+ 3559              	.LASF6:
+ 3560 0b72 73686F72 		.ascii	"short unsigned int\000"
+ 3560      7420756E 
+ 3560      7369676E 
+ 3560      65642069 
+ 3560      6E7400
+ 3561              	.LASF69:
+ 3562 0b85 64774368 		.ascii	"dwChSize\000"
+ 3562      53697A65 
+ 3562      00
+ 3563              	.LASF189:
+ 3564 0b8e 584D6167 		.ascii	"XMag\000"
+ 3564      00
+ 3565              	.LASF142:
+ 3566 0b93 73746F70 		.ascii	"stopInput\000"
+ 3566      496E7075 
+ 3566      7400
+ 3567              	.LASF105:
+ 3568 0b9d 69706353 		.ascii	"ipcStructSize\000"
+ 3568      74727563 
+ 3568      7453697A 
+ 3568      6500
+ 3569              	.LASF44:
+ 3570 0bab 63707573 		.ascii	"cpussIpc0Irq\000"
+ 3570      73497063 
+ 3570      30497271 
+ 3570      00
+ 3571              	.LASF178:
+ 3572 0bb8 70664765 		.ascii	"pfGetLineLen\000"
+ 3572      744C696E 
+ 3572      654C656E 
+ 3572      00
+ 3573              	.LASF27:
+ 3574 0bc5 6770696F 		.ascii	"gpioBase\000"
+ 3574      42617365 
+ 3574      00
+ 3575              	.LASF149:
+ 3576 0bce 704C6973 		.ascii	"pList\000"
+ 3576      7400
+ 3577              	.LASF122:
+ 3578 0bd4 696E6974 		.ascii	"initKey\000"
+ 3578      4B657900 
+ 3579              	.LASF150:
+ 3580 0bdc 4755495F 		.ascii	"GUI_FONT_TRANSINFO\000"
+ 3580      464F4E54 
+ 3580      5F545241 
+ 3580      4E53494E 
+ 3580      464F00
+ 3581              	.LASF18:
+ 3582 0bef 75696E74 		.ascii	"uint32_t\000"
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 80
+
+
+ 3582      33325F74 
+ 3582      00
+ 3583              	.LASF112:
+ 3584 0bf8 5F426F6F 		.ascii	"_Bool\000"
+ 3584      6C00
+ 3585              	.LASF207:
+ 3586 0bfe 706F7765 		.ascii	"powerCycle\000"
+ 3586      72437963 
+ 3586      6C6500
+ 3587              	.LASF213:
+ 3588 0c09 43595F45 		.ascii	"CY_EINK_SPIM_context\000"
+ 3588      494E4B5F 
+ 3588      5350494D 
+ 3588      5F636F6E 
+ 3588      74657874 
+ 3589              	.LASF46:
+ 3590 0c1e 63707573 		.ascii	"cpussNotConnectedIrq\000"
+ 3590      734E6F74 
+ 3590      436F6E6E 
+ 3590      65637465 
+ 3590      64497271 
+ 3591              	.LASF151:
+ 3592 0c33 5853697A 		.ascii	"XSize\000"
+ 3592      6500
+ 3593              	.LASF60:
+ 3594 0c39 666C6173 		.ascii	"flashWriteDelay\000"
+ 3594      68577269 
+ 3594      74654465 
+ 3594      6C617900 
+ 3595              	.LASF230:
+ 3596 0c49 4755495F 		.ascii	"GUI_DrawLine\000"
+ 3596      44726177 
+ 3596      4C696E65 
+ 3596      00
+ 3597              	.LASF14:
+ 3598 0c56 75696E74 		.ascii	"uint8_t\000"
+ 3598      385F7400 
+ 3599              	.LASF167:
+ 3600 0c5e 70547261 		.ascii	"pTrans\000"
+ 3600      6E7300
+ 3601              	.LASF93:
+ 3602 0c65 63707573 		.ascii	"cpussCm4StatusOffset\000"
+ 3602      73436D34 
+ 3602      53746174 
+ 3602      75734F66 
+ 3602      66736574 
+ 3603              	.LASF86:
+ 3604 0c7a 6770696F 		.ascii	"gpioPrtIntrCfgOffset\000"
+ 3604      50727449 
+ 3604      6E747243 
+ 3604      66674F66 
+ 3604      66736574 
+ 3605              	.LASF232:
+ 3606 0c8f 4755495F 		.ascii	"GUI_SetTextAlign\000"
+ 3606      53657454 
+ 3606      65787441 
+ 3606      6C69676E 
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 81
+
+
+ 3606      00
+ 3607              	.LASF168:
+ 3608 0ca0 4755495F 		.ascii	"GUI_FONT_MONO\000"
+ 3608      464F4E54 
+ 3608      5F4D4F4E 
+ 3608      4F00
+ 3609              	.LASF162:
+ 3610 0cae 4C617374 		.ascii	"Last\000"
+ 3610      00
+ 3611              	.LASF219:
+ 3612 0cb3 4C43445F 		.ascii	"LCD_GetDisplayBuffer\000"
+ 3612      47657444 
+ 3612      6973706C 
+ 3612      61794275 
+ 3612      66666572 
+ 3613              	.LASF206:
+ 3614 0cc8 75706461 		.ascii	"updateMethod\000"
+ 3614      74654D65 
+ 3614      74686F64 
+ 3614      00
+ 3615              	.LASF97:
+ 3616 0cd5 63707573 		.ascii	"cpussTrimRomCtlOffset\000"
+ 3616      73547269 
+ 3616      6D526F6D 
+ 3616      43746C4F 
+ 3616      66667365 
+ 3617              	.LASF225:
+ 3618 0ceb 4755495F 		.ascii	"GUI_Init\000"
+ 3618      496E6974 
+ 3618      00
+ 3619              	.LASF47:
+ 3620 0cf4 73727373 		.ascii	"srssNumClkpath\000"
+ 3620      4E756D43 
+ 3620      6C6B7061 
+ 3620      746800
+ 3621              	.LASF8:
+ 3622 0d03 6C6F6E67 		.ascii	"long int\000"
+ 3622      20696E74 
+ 3622      00
+ 3623              	.LASF1:
+ 3624 0d0c 7369676E 		.ascii	"signed char\000"
+ 3624      65642063 
+ 3624      68617200 
+ 3625              	.LASF29:
+ 3626 0d18 69706342 		.ascii	"ipcBase\000"
+ 3626      61736500 
+ 3627              	.LASF239:
+ 3628 0d20 6D61696E 		.ascii	"main\000"
+ 3628      00
+ 3629              	.LASF61:
+ 3630 0d25 666C6173 		.ascii	"flashProgramDelay\000"
+ 3630      6850726F 
+ 3630      6772616D 
+ 3630      44656C61 
+ 3630      7900
+ 3631              	.LASF228:
+ 3632 0d37 4755495F 		.ascii	"GUI_SetPenSize\000"
+ARM GAS  C:\Users\Labeo\AppData\Local\Temp\cc1FUKsk.s 			page 82
+
+
+ 3632      53657450 
+ 3632      656E5369 
+ 3632      7A6500
+ 3633              	.LASF235:
+ 3634 0d46 6D61696E 		.ascii	"main_cm4.c\000"
+ 3634      5F636D34 
+ 3634      2E6300
+ 3635              	.LASF236:
+ 3636 0d51 433A5C55 		.ascii	"C:\\Users\\Labeo\\Desktop\\Laboratoire3\\Laboratoir"
+ 3636      73657273 
+ 3636      5C4C6162 
+ 3636      656F5C44 
+ 3636      65736B74 
+ 3637 0d7f 65332E63 		.ascii	"e3.cydsn\000"
+ 3637      7964736E 
+ 3637      00
+ 3638              	.LASF185:
+ 3639 0d88 70664973 		.ascii	"pfIsInFont\000"
+ 3639      496E466F 
+ 3639      6E7400
+ 3640              	.LASF58:
+ 3641 0d93 666C6173 		.ascii	"flashRwwRequired\000"
+ 3641      68527777 
+ 3641      52657175 
+ 3641      69726564 
+ 3641      00
+ 3642              	.LASF197:
+ 3643 0da4 704D6F6E 		.ascii	"pMono\000"
+ 3643      6F00
+ 3644              	.LASF140:
+ 3645 0daa 73746172 		.ascii	"startInput\000"
+ 3645      74496E70 
+ 3645      757400
+ 3646              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 5.4.1 20160609 (release) [ARM/embedded-5-bran
